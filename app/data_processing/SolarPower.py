@@ -17,7 +17,7 @@ def load_power_generation_data(
 
 def load_station_info(
     file_path: str
-) -> Dict:
+) -> Dict[str, Tuple[str, str]]:
     station_info = {}
     region_fuel_info = pd.read_csv(file_path)
     for _, row in region_fuel_info.iterrows():
@@ -121,13 +121,43 @@ def calculate_capacity_factor(
         return regional_avg_capcity_factor
 
 
-# def calculate_pg_with_cf(
+def calculate_capcity_percentage(
+    capacity_data: Dict[str, float],
+    station_data: Dict[str, Tuple[str, str]],
+    fuel_type: str
+) -> defaultdict(float):
 
-# )
+    region_capcity = defaultdict(float)
+    national_capacity: float = 0
+    capacity_percentage = defaultdict(float)
+    for station in capacity_data:
+        region, fuel = station_data[station]
+        if fuel == fuel_type:
+            region_capcity[region] += capacity_data[station]
+            national_capacity += capacity_data[station]
+            print(region, station, capacity_data[station])
+
+    for region in region_capcity:
+        capacity_percentage[region] = region_capcity[region] / national_capacity
+    print(capacity_percentage)
+
+    return capacity_percentage
+
+
+def calculate_pg_with_cf(
+    capacity_factor: pd.DataFrame,
+    capcity: float,
+
+) -> pd.DataFrame:
+
+    pg_data: pd.DataFrame = pd.DataFrame()
+    for region in capacity_factor.columns:
+        pg_data[region] = capacity_factor[region] * capcity
+
 
 # Load power generation data
 data_file_path = '../../data/power_generation/各機組過去發電量20220101-20220331.json'
-power_generation_data = load_power_generation_data(data_file_path)
+power_generation_data = load_power_generation_data(file_path=data_file_path)
 
 '''
 data_dir = '../../data/power_generation'
@@ -140,34 +170,46 @@ data_file_names = [
 ]
 '''
 
-# Load station info
+
 station_info_file_path = '../../data/powerplants_info.csv'
-station_info = load_station_info(station_info_file_path)
+solar_capacity_file_path = '../../data/solarpower_capacity.csv'
+
+# Load station info
+station_info = load_station_info(
+    file_path=station_info_file_path
+)
 
 # Load solar power capacity
-solar_capacity_file_path = '../../data/solarpower_capacity.csv'
-solar_capacity_info = load_capacity_info(solar_capacity_file_path)
+solar_capacity_info = load_capacity_info(
+    file_path=solar_capacity_file_path
+)
 
 # Process power generation data
 pg_data = process_power_generation_data(
-    power_generation_data,
-    station_info
+    data=power_generation_data,
+    station_info=station_info
 )
 
-hourly_pg_data = compute_hourly_data(pg_data)
+hourly_pg_data = compute_hourly_data(
+    data=pg_data
+)
 
 # Calculate capacity facotr of the {fuel type}
 region_capacity_facotr = calculate_capacity_factor(
-    hourly_pg_data,
-    solar_capacity_info
+    hourly_pg=hourly_pg_data,
+    solar_capacity_data=solar_capacity_info
+    # fuel_type: defualt is "太陽能"
     # sclae: regional or nationl. defualt is regional
 )
 
 national_capacity_facotr = calculate_capacity_factor(
-    hourly_pg_data,
-    solar_capacity_info,
+    hourly_pg=hourly_pg_data,
+    solar_capacity_data=solar_capacity_info,
     scale="national"
 )
 
-print(region_capacity_facotr.mean())
-print(national_capacity_facotr.mean())
+calculate_capcity_percentage(
+    capacity_data=solar_capacity_info,
+    station_data=station_info,
+    fuel_type="太陽能"
+)
