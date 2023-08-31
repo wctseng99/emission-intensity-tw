@@ -32,12 +32,13 @@ def load_capacity_info(
     capacity_df = pd.read_csv(file_path)
     # print(capacity_df)
     for _, row in capacity_df.iterrows():
-        capacity_data[row['Station Name']] = float(row['Installed Capacity(kW)'])
+        capacity_data[row['Station Name']] = float(
+            row['Installed Capacity(kW)'])
     return capacity_data
 
 
 def process_power_generation_data(
-    data: Dict, 
+    data: Dict,
     station_info: Dict
 ) -> Dict:
 
@@ -52,12 +53,13 @@ def process_power_generation_data(
         try:
             station_name = unit
             region, _ = station_info[station_name]
-            pg_data[region][fuel][unit].append(float(net_power) * 1000)  # Convert from MW to kW
+            pg_data[region][fuel][unit].append(
+                float(net_power) * 1000)  # Convert from MW to kW
         except:
             missing_station[station_name].append((fuel, date, net_power))
     if missing_station:
-        print(f'Please Check the new stations or errors: {missing_station.keys()}.')
-
+        print(
+            f'Please Check the new stations or errors: {missing_station.keys()}.')
 
     return pg_data
 
@@ -67,7 +69,7 @@ def compute_hourly_data(
 ) -> Dict[str, Dict[str, Dict[str, List[float]]]]:
 
     hourly_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-    
+
     for region, fuel_dict in data.items():
         for fuel_type, unit_dict in fuel_dict.items():
             for unit, power_values in unit_dict.items():
@@ -76,7 +78,7 @@ def compute_hourly_data(
                     avg_value = np.mean(power_values[i:i+6])
                     hourly_values.append(avg_value)
                 hourly_data[region][fuel_type][unit] = hourly_values
-                
+
     return hourly_data
 
 
@@ -85,40 +87,43 @@ def calculate_capacity_factor(
     solar_capacity_data: Dict[str, float],
     fuel_type: str = "太陽能",
     scale: str = "regional"
-):
+) -> pd.DataFrame | pd.Series:
 
     national_power = pd.DataFrame()
     national_capcity: float = 0
     regional_avg_capcity_factor = pd.DataFrame()
 
     for region, region_data in hourly_pg.items():
-        regional_power: float= pd.DataFrame()
+        regional_power: float = pd.DataFrame()
         regional_capcity: float = 0
         for station, station_data in region_data[fuel_type].items():
             if station in solar_capacity_data:
 
                 regional_power[station] = station_data
                 regional_capcity += solar_capacity_data[station]
-                
+
                 national_power[station] = station_data
                 national_capcity += solar_capacity_data[station]
-                
+
         regional_capcity_factor = regional_power.sum(axis=1) / regional_capcity
-        regional_avg_capcity_factor[region] = regional_capcity_factor  
+        regional_avg_capcity_factor[region] = regional_capcity_factor
 
     # Eastern region is the average of central and southern region, due to the lack of eastern solar power data.
     if regional_avg_capcity_factor['東部'].isna().all():
-        regional_avg_capcity_factor['東部'] = regional_avg_capcity_factor[['中部', '南部']].mean(axis=1)
-    
-    national_capcity_factor = national_power.sum(axis=1) / national_capcity
+        regional_avg_capcity_factor['東部'] = regional_avg_capcity_factor[[
+            '中部', '南部']].mean(axis=1)
 
-    # print(f'national: {national_capcity_factor.mean()}')
-    # print(f'regional: {regional_avg_capcity_factor.mean()}')
+    national_capacity_factor = national_power.sum(axis=1) / national_capcity
 
     if scale == 'national':
-        return national_capcity_factor
+        return national_capacity_factor
     if scale == 'regional':
-        return  regional_avg_capcity_factor
+        return regional_avg_capcity_factor
+
+
+# def calculate_pg_with_cf(
+
+# )
 
 # Load power generation data
 data_file_path = '../../data/power_generation/各機組過去發電量20220101-20220331.json'
@@ -144,12 +149,25 @@ solar_capacity_file_path = '../../data/solarpower_capacity.csv'
 solar_capacity_info = load_capacity_info(solar_capacity_file_path)
 
 # Process power generation data
-pg_data = process_power_generation_data(power_generation_data, station_info)
+pg_data = process_power_generation_data(
+    power_generation_data,
+    station_info
+)
+
 hourly_pg_data = compute_hourly_data(pg_data)
 
 # Calculate capacity facotr of the {fuel type}
-region_capacity_facotr = calculate_capacity_factor(hourly_pg_data, solar_capacity_info)
-# sclae parameter: regional or nationl. defualt is regional
+region_capacity_facotr = calculate_capacity_factor(
+    hourly_pg_data,
+    solar_capacity_info
+    # sclae: regional or nationl. defualt is regional
+)
 
+national_capacity_facotr = calculate_capacity_factor(
+    hourly_pg_data,
+    solar_capacity_info,
+    scale="national"
+)
 
-
+print(region_capacity_facotr.mean())
+print(national_capacity_facotr.mean())
