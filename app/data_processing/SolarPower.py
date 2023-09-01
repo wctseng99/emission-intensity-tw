@@ -135,10 +135,10 @@ def calculate_capcity_percentage(
         if fuel == fuel_type:
             region_capcity[region] += capacity_data[station]
             national_capacity += capacity_data[station]
-            print(region, station, capacity_data[station])
 
     for region in region_capcity:
-        capacity_percentage[region] = region_capcity[region] / national_capacity
+        capacity_percentage[region] = region_capcity[region] / \
+            national_capacity
     print(capacity_percentage)
 
     return capacity_percentage
@@ -146,13 +146,25 @@ def calculate_capcity_percentage(
 
 def calculate_pg_with_cf(
     capacity_factor: pd.DataFrame,
-    capcity: float,
-
+    capcity_target: float,
+    unit: str,
+    capcity_percentage: defaultdict(float)
 ) -> pd.DataFrame:
+    if unit == 'kW':
+        capcity_target = capcity_target
+    if unit == 'MW':
+        capcity_target = capcity_target * (10**3)
+    if unit == 'GW':
+        capcity_target = capcity_target * (10**6)
+    else:
+        return "Please input the correct unit: kW, MW, and GW"
 
     pg_data: pd.DataFrame = pd.DataFrame()
     for region in capacity_factor.columns:
-        pg_data[region] = capacity_factor[region] * capcity
+        pg_data[region] = capacity_factor[region] * \
+            capcity_target * capcity_percentage[region]
+    print(pg_data.sum())
+    return pg_data
 
 
 # Load power generation data
@@ -195,12 +207,14 @@ hourly_pg_data = compute_hourly_data(
 )
 
 # Calculate capacity facotr of the {fuel type}
-region_capacity_facotr = calculate_capacity_factor(
+region_capacity_factor = calculate_capacity_factor(
     hourly_pg=hourly_pg_data,
     solar_capacity_data=solar_capacity_info
     # fuel_type: defualt is "太陽能"
     # sclae: regional or nationl. defualt is regional
 )
+
+print(region_capacity_factor)
 
 national_capacity_facotr = calculate_capacity_factor(
     hourly_pg=hourly_pg_data,
@@ -208,8 +222,16 @@ national_capacity_facotr = calculate_capacity_factor(
     scale="national"
 )
 
-calculate_capcity_percentage(
+solar_capacity_percentage = calculate_capcity_percentage(
     capacity_data=solar_capacity_info,
     station_data=station_info,
     fuel_type="太陽能"
+)
+
+
+calculate_pg_with_cf(
+    capacity_factor=region_capacity_factor,
+    capcity_target=80,
+    unit='GW',
+    capcity_percentage=solar_capacity_percentage
 )
