@@ -89,15 +89,32 @@ def calculate_capacity_factor(
     scale: str = "regional"
 ) -> pd.DataFrame | pd.Series:
 
+    def detect_negitive_values(
+        data: list
+    ) -> list:
+        if np.any(np.array(data) < 0):
+            print(
+                f'There is the station with negative power values: region: {region}, station: {station}.')
+            neg_station = np.array(data)
+            neg_station[neg_station < 0] = 0
+            revised_data = neg_station.tolist()
+            return revised_data
+        else:
+            return data
+
     national_power = pd.DataFrame()
     national_capcity: float = 0
     regional_avg_capcity_factor = pd.DataFrame()
 
     for region, region_data in hourly_pg.items():
-        regional_power: float = pd.DataFrame()
+        regional_power = pd.DataFrame()
         regional_capcity: float = 0
         for station, station_data in region_data[fuel_type].items():
             if station in solar_capacity_data:
+
+                # check if there are negative values, and replace them with zeros.
+                station_data = detect_negitive_values(
+                    data=station_data)
 
                 regional_power[station] = station_data
                 regional_capcity += solar_capacity_data[station]
@@ -105,8 +122,10 @@ def calculate_capacity_factor(
                 national_power[station] = station_data
                 national_capcity += solar_capacity_data[station]
 
-        regional_capcity_factor = regional_power.sum(axis=1) / regional_capcity
-        regional_avg_capcity_factor[region] = regional_capcity_factor
+        regional_capacity_factor = regional_power.sum(
+            axis=1) / regional_capcity
+
+        regional_avg_capcity_factor[region] = regional_capacity_factor
 
     # Eastern region is the average of central and southern region, due to the lack of eastern solar power data.
     if regional_avg_capcity_factor['東部'].isna().all():
@@ -214,8 +233,6 @@ region_capacity_factor = calculate_capacity_factor(
     # sclae: regional or nationl. defualt is regional
 )
 
-print(region_capacity_factor)
-
 national_capacity_facotr = calculate_capacity_factor(
     hourly_pg=hourly_pg_data,
     solar_capacity_data=solar_capacity_info,
@@ -235,3 +252,4 @@ calculate_pg_with_cf(
     unit='GW',
     capcity_percentage=solar_capacity_percentage
 )
+
