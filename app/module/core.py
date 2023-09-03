@@ -19,8 +19,9 @@ def calculate_capacity_factor(
         data: list
     ) -> list:
         if np.any(np.array(data) < 0):
-            print(
+            logging.info(
                 f'There is the station with negative power values: region: {region}, station: {station}.')
+
             neg_station = np.array(data)
             neg_station[neg_station < 0] = 0
             revised_data = neg_station.tolist()
@@ -61,9 +62,9 @@ def calculate_capacity_factor(
     national_capacity_factor = national_power.sum(axis=1) / national_capcity
 
     logging.info(
-        f'The avg of regional capcity factor: {regional_avg_capcity_factor.mean()}.')
+        f'The avg of regional capcity factor:\n{regional_avg_capcity_factor.mean()}.')
     logging.info(
-        f'The avg of national capcity factor: {national_capacity_factor.mean()}.')
+        f'The avg of national capcity factor:\n{national_capacity_factor.mean()}.')
 
     if scale == 'national':
         return national_capacity_factor
@@ -110,7 +111,7 @@ def calculate_pg_with_cf(
     if unit == 'GW':
         capcity_target = capcity_target * (10**6)
     else:
-        return "Please input the correct unit: kW, MW, and GW"
+        return logging.info(f"Please input the correct unit: kW, MW, and GW")
 
     pg_data: pd.DataFrame = pd.DataFrame()
     for region in capacity_factor.columns:
