@@ -148,7 +148,7 @@ def emission_intenisty_module(
     solar_generaion: pd.Series,
     target_fuel: str,
     scale: str = 'regional', # or national
-) -> Tuple[pd.DataFrame, pd.DataFrame] | Tuple[pd.Series, List[float]]:
+) -> Tuple[pd.DataFrame, pd.DataFrame] | List[float]:
 
     pg_data = get_hourly_pg_data(
         data_dir=data_dir,
@@ -163,13 +163,19 @@ def emission_intenisty_module(
     )
 
     # regional_air_pollution = calculate_regional_air_pollution(air_pollutant)
-    power_generation = calculate_power_generation_with_target(pg_sum_exclude_solar, solar_generaion)
-    ap_intensity = calculate_air_pollution_intensity(air_pollutant, power_generation)
+    power_generation = calculate_power_generation_with_target(
+        pg_sum_exclude_solar, 
+        solar_generaion
+    )
+    ap_intensity = calculate_air_pollution_intensity(
+        air_pollutant, 
+        power_generation
+    )
     pg_national, ap_national, api_national = calculate_national_data(air_pollutant, power_generation)
 
     if scale == 'national':
         return ap_national, api_national
-    return regional_air_pollution, ap_intensity
+    return  ap_intensity
 
     # flow_data = get_json_file(
     #     data_dir=data_dir,
