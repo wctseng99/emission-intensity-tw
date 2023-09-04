@@ -8,17 +8,30 @@ from pathlib import Path
 from absl import app, flags, logging
 
 from app.data import (
-    load_json_file,
-    load_station_info,
-    load_capacity_info,
+    # base
+    get_json_file,
+    get_station_info,
+    get_capacity_info,
     process_power_generation_data,
-    compute_hourly_data
+    compute_hourly_data,
+    # pg
+    get_hourly_pg_data,
+    get_selected_pg_data,
+    # ape
+    get_ap_emission_factor,
+    get_emissions_by_region,
 )
 
 from app.module import (
+    # core
     calculate_capacity_factor,
     calculate_capcity_percentage,
-    calculate_pg_with_cf
+    calculate_pg_with_cf,
+    # api
+    # calculate_regional_air_pollution,
+    calculate_power_generation_with_target,
+    calculate_air_pollution_intensity,
+    calculate_national_data
 )
 
 flags.DEFINE_string("data_dir", "./data", "Directory for data.")
@@ -27,39 +40,29 @@ FLAGS = flags.FLAGS
 
 
 
+
 def estimate_target_power(
-    dir_dir: Path,
+    data_dir: Path,
     pg_file: str,
     station_file: str,
-    capcity_file: str 
+    capcity_file: str
 ) -> pd.DataFrame:
 
-    # Load power generation data
-    power_generation_data = load_json_file(
-        data_dir=f'{dir_dir}/power_generation/',
-        pg_file=pg_file
-    )
-
-    # Load station info
-    station_info = load_station_info(
-        data_dir=dir_dir, 
-        station_file=station_file
-    )
-
-    # Load solar power capacity
-    solar_capacity_info = load_capacity_info(
-        data_dir=dir_dir, 
+    hourly_pg_data = get_hourly_pg_data(
+        data_dir=data_dir,
+        pg_file=pg_file,
+        station_file=station_file,
         capcity_file=capcity_file
     )
 
-    # Process power generation data
-    pg_data = process_power_generation_data(
-        data=power_generation_data,
-        station_info=station_info
+    station_info = get_station_info(
+        data_dir=data_dir,
+        station_file=station_file
     )
 
-    hourly_pg_data = compute_hourly_data(
-        data=pg_data
+    solar_capacity_info = get_capacity_info(
+        data_dir=data_dir,
+        capcity_file=capcity_file
     )
 
     # Calculate capacity facotr of the {fuel type}
@@ -92,6 +95,86 @@ def estimate_target_power(
     return solar_pg_estimation
 
 
+def estimate_emissions(
+    data_dir: Path,
+    pg_file: str,
+    station_file: str,
+    capcity_file: str,
+):
+
+    pg_data = get_hourly_pg_data(
+        data_dir=data_dir,
+        pg_file=pg_file,
+        station_file=station_file,
+        capcity_file=capcity_file
+    )
+
+    # Specify CSV files and columns
+    csv_files = {
+        'pg.csv': ['能源別', '電廠名稱', '淨發電量(度)'],
+        'AirpollutantEmission.csv': ['硫氧化物排放量(kg)', '氮氧化物排放量(kg)', '粒狀污染物排放量(kg)']
+    }
+
+    ap_ef = get_ap_emission_factor(data_dir, csv_files)
+
+    # Calculate emissions by region
+    SOx_emissions = get_emissions_by_region(
+        region_power_generation=pg_data,
+        emission_data=ap_ef,
+        target_emission='SOx'
+    )
+
+    NOx_emissions = get_emissions_by_region(
+        region_power_generation=pg_data,
+        emission_data=ap_ef,
+        target_emission='NOx'
+    )
+
+    PM_emissions = get_emissions_by_region(
+        region_power_generation=pg_data,
+        emission_data=ap_ef,
+        target_emission='PM'
+    )
+
+    return SOx_emissions, NOx_emissions, PM_emissions
+
+
+def emission_intenisty_module(
+    data_dir: Path,
+    pg_file: str,
+    station_file: str,
+    capcity_file: str,
+    air_pollutant: Dict[str, pd.DataFrame],
+    solar_generaion: pd.Series,
+    target_fuel: str,
+    scale: str = 'regional', # or national
+) -> Tuple[pd.DataFrame, pd.DataFrame] | Tuple[pd.Series, List[float]]:
+
+    pg_data = get_hourly_pg_data(
+        data_dir=data_dir,
+        pg_file=pg_file,
+        station_file=station_file,
+        capcity_file=capcity_file
+    )
+
+    pg_sum_exclude_solar = get_selected_pg_data(
+        pg=pg_data,
+        exclude_fuel=target_fuel
+    )
+
+    # regional_air_pollution = calculate_regional_air_pollution(air_pollutant)
+    power_generation = calculate_power_generation_with_target(pg_sum_exclude_solar, solar_generaion)
+    ap_intensity = calculate_air_pollution_intensity(air_pollutant, power_generation)
+    pg_national, ap_national, api_national = calculate_national_data(air_pollutant, power_generation)
+
+    if scale == 'national':
+        return ap_national, api_national
+    return regional_air_pollution, ap_intensity
+
+    # flow_data = get_json_file(
+    #     data_dir=data_dir,
+    #     pg_file=power_flow
+    # )
 
 def main(_):
 
@@ -103,9 +186,26 @@ def main(_):
         'powerplants_info.csv',
         'solarpower_capacity.csv'
     )
-    
-    logging.info(f'solar_pg_estimation: {solar_pg_estimation}')
 
+    SOx_emissions, NOx_emissions, Pm_emissions = estimate_emissions(
+        FLAGS.data_dir,
+        '各機組過去發電量20220101-20220331.json',
+        'powerplants_info.csv',
+        'solarpower_capacity.csv',
+    )
+
+    emission_intenisty_module (
+        FLAGS.data_dir,
+        '各機組過去發電量20220101-20220331.json',
+        'powerplants_info.csv',
+        'solarpower_capacity.csv',
+        SOx_emissions, 
+        solar_pg_estimation,
+        target_fuel="太陽能"
+
+    )
+
+    
 
 
 if __name__ == "__main__":
