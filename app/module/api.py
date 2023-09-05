@@ -7,7 +7,7 @@ import os
 
 def calculate_power_generation_with_target(
     pg_wo_target: pd.DataFrame, 
-    target_gen_data: pd.Series
+    target_gen_data: pd.DataFrame
 ) -> pd.DataFrame:
 
     power_generation = pd.DataFrame()
@@ -19,22 +19,19 @@ def calculate_power_generation_with_target(
 
 def calculate_air_pollution_intensity(
     ap_data: pd.DataFrame, 
-    pg_data: pd.DataFrame
+    pg_data: pd.DataFrame,
+    scale: str = "regional"
 ) -> pd.DataFrame:
 
-    ap_intensity: pd.DataFrame = pd.DataFrame()
-    for region in pg_data.columns:
-        ap_intensity[region] = list(map(lambda a,b: a/b, ap_data[region], pg_data[region]))  
-    return ap_intensity
-
-def calculate_national_data(
-    ap_data: pd.DataFrame, 
-    pg_data: pd.DataFrame
-    ) -> Tuple[pd.Series, pd.Series, List[float]]:
-
-    pg_national = pg_data.sum(axis=1)
-    ap_national = ap_data.sum(axis=1)
-    api_national = list(map(lambda a,b: a/b, ap_national, pg_national))
     
-    return pg_national, ap_national, api_national
+    if scale == "regional":
+        api_regional = pd.DataFrame()
+        for region in pg_data.columns:
+            api_regional[region] = list(map(lambda a,b: a/b, ap_data[region], pg_data[region]))  
+        return api_regional
 
+    else:
+        pg_national = pg_data.sum(axis=1)
+        ap_national = ap_data.sum(axis=1)
+        api_national = list(map(lambda a,b: a/b, ap_national, pg_national))
+        return api_national
