@@ -29,7 +29,8 @@ from app.module import (
     calculate_pg_with_cf,
     # api
     calculate_power_generation_with_target,
-    calculate_air_pollution_intensity
+    calculate_air_pollution_intensity,
+    calculate_power_flow
 )
 
 flags.DEFINE_string("data_dir", "./data", "Directory for data.")
@@ -96,12 +97,13 @@ def emission_intenisty_module(
     pg_file: str,
     station_file: str,
     capacity_file: str,
-    # air_pollutant: pd.DataFrame,
     solar_generaion: pd.Series,
     target_fuel: str,
+    flow_data: str,
     scale: str = 'regional', # or national
 ):
-    def estimate_emissions():
+    def estimate_emissions(
+    ):
 
         pg_data = get_hourly_pg_data(
             data_dir=data_dir,
@@ -140,10 +142,8 @@ def emission_intenisty_module(
         return pg_data, SOx_emissions, NOx_emissions, PM_emissions
 
 
-    # emission module
-    pg_data, SOx_emissions, NOx_emissions, PM_emissions = estimate_emissions()
-
-    def estimate_emission_intensity():
+    def estimate_emission_intensity(
+    ):
         pg_sum_exclude_solar = get_selected_pg_data(
             pg=pg_data,
             exclude_fuel=target_fuel
@@ -171,16 +171,54 @@ def emission_intenisty_module(
             ap_data=PM_emissions, 
             pg_data=power_generation,
             scale=scale
-       )
+        )
+
         return power_generation, SOx_intensity, NOx_intensity, PM_intensity
 
-    power_generation, SOx_intensity, NOx_intensity, PM_intensity = estimate_emission_intensity()
 
-    def impacts_of_power_flow():
-        flow_data = get_json_file(
+    def power_flow_module():
+        pg_flow = get_json_file(
             data_dir=data_dir,
-            pg_file=power_flow
+            pg_file=flow_data
         )
+
+        SOx_EFs = calculate_power_flow(
+            pg=power_generation,
+            flow=pg_flow,
+            intensity=SOx_intensity,
+            emission=SOx_emissions
+        )
+
+        NOx_EFs = calculate_power_flow(
+            pg=power_generation,
+            flow=pg_flow,
+            intensity=NOx_intensity,
+            emission=NOx_emissions
+        )
+
+        PM_EFs = calculate_power_flow(
+            pg=power_generation,
+            flow=pg_flow,
+            intensity=PM_intensity,
+            emission=PM_emissions
+        )
+
+        return SOx_EFs, NOx_EFs, PM_EFs
+
+
+
+    # emission module
+    pg_data, SOx_emissions, NOx_emissions, PM_emissions = estimate_emissions()
+    # emission intensity module
+    power_generation, SOx_intensity, NOx_intensity, PM_intensity = estimate_emission_intensity()
+    # power flow module
+    SOx_EFs, NOx_EFs, PM_EFs = power_flow_module()
+
+
+    return SOx_EFs, NOx_EFs, PM_EFs
+
+        
+
 
 def main(_):
 
@@ -188,21 +226,26 @@ def main(_):
 
     # solar power module
     solar_pg_estimation = estimate_target_power(
-        FLAGS.data_dir,
-        '各機組過去發電量20220101-20220331.json',
-        'powerplants_info.csv',
-        'solarpower_capacity.csv'
+        data_dir=FLAGS.data_dir,
+        pg_file='各機組過去發電量20220101-20220331.json',
+        station_file='powerplants_info.csv',
+        capacity_file='solarpower_capacity.csv'
     )
 
     # emission intensity module
-    emission_intenisty_module (
-        FLAGS.data_dir,
-        '各機組過去發電量20220101-20220331.json',
-        'powerplants_info.csv',
-        'solarpower_capacity.csv', 
-        solar_pg_estimation,
-        target_fuel="太陽能"
+    SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module (
+        data_dir=FLAGS.data_dir,
+        pg_file='各機組過去發電量20220101-20220331.json',
+        station_file='powerplants_info.csv',
+        capacity_file='solarpower_capacity.csv', 
+        solar_generaion=solar_pg_estimation,
+        target_fuel="太陽能",
+        flow_data='pg_flow_1_3.json'
     )
+
+    logging.info(SOx_EFs)
+    logging.info(NOx_EFs)
+    logging.info(PM_EFs)
 
     
 if __name__ == "__main__":

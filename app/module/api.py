@@ -3,6 +3,7 @@ import pandas as pd
 from typing import List, Dict, Tuple
 import numpy as np
 import os
+import copy
 
 
 def calculate_power_generation_with_target(
@@ -35,3 +36,32 @@ def calculate_air_pollution_intensity(
         ap_national = ap_data.sum(axis=1)
         api_national = list(map(lambda a,b: a/b, ap_national, pg_national))
         return api_national
+
+
+def calculate_power_flow(
+    pg: Dict, 
+    flow: Dict, 
+    intensity: pd.DataFrame ,
+    emission: pd.DataFrame
+):
+
+    pg_flow = copy.deepcopy(pg)
+    em_flow = copy.deepcopy(emission)
+
+    for type in flow:
+        origin = flow[type]['from']
+        destination = flow[type]['to']
+        #electricity flow
+        pg_flow[destination] = list(map(lambda x,y: x+y, pg_flow[destination], flow[type]['powerkWh']))
+        pg_flow[origin] = list(map(lambda x,y: x-y, pg_flow[origin], flow[type]['powerkWh']))
+        # emission flow  
+        em = list(map(lambda x,y: x*y, flow[type]['powerkWh'], intensity[origin]))
+        em_flow[destination] = list(map(lambda x,y: x+y, em_flow[destination], em))
+        em_flow[origin] =list(map(lambda x,y: x-y, em_flow[origin], em))
+    # intensity flow
+    EFs  = pd.DataFrame()
+    for region in em_flow:
+        if region == '離島':
+            continue
+        EFs[region] = list(map(lambda x,y: x/y, em_flow[region], pg_flow[region]))
+    return EFs
