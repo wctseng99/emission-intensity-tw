@@ -84,7 +84,7 @@ def estimate_target_power(
     # Estimate the solar power in different regions with {target} solar power capacity.
     solar_pg_estimation = calculate_pg_with_cf(
         capacity_factor=region_capacity_factor,
-        capcity_target=80,
+        capcity_target=7.2,
         unit='GW',
         capcity_percentage=solar_capacity_percentage
     )
@@ -115,7 +115,7 @@ def emission_intenisty_module(
         # Specify CSV files and columns
         csv_files = {
             'pg.csv': ['能源別', '電廠名稱', '淨發電量(度)'],
-            'AirpollutantEmission.csv': ['硫氧化物排放量(kg)', '氮氧化物排放量(kg)', '粒狀污染物排放量(kg)', '溫室氣體排放量(kg)']
+            'AirpollutantEmission.csv': ['硫氧化物排放量(kg)', '氮氧化物排放量(kg)', '粒狀污染物排放量(kg)', '溫室氣體排放量係數(kg/kwh)']
         }
 
         ap_ef = get_ap_emission_factor(data_dir, csv_files)
@@ -262,10 +262,10 @@ def main(_):
         flow_data='pg_flow_1_3.json'
     )
 
-    logging.info(CO2e_EFs)
-    logging.info(SOx_EFs)
-    logging.info(NOx_EFs)
-    logging.info(PM_EFs)
+    logging.info(CO2e_EFs.mean())
+    # logging.info(SOx_EFs)
+    # logging.info(NOx_EFs)
+    # logging.info(PM_EFs)
 
     
 if __name__ == "__main__":
