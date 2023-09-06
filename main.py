@@ -115,12 +115,18 @@ def emission_intenisty_module(
         # Specify CSV files and columns
         csv_files = {
             'pg.csv': ['能源別', '電廠名稱', '淨發電量(度)'],
-            'AirpollutantEmission.csv': ['硫氧化物排放量(kg)', '氮氧化物排放量(kg)', '粒狀污染物排放量(kg)']
+            'AirpollutantEmission.csv': ['硫氧化物排放量(kg)', '氮氧化物排放量(kg)', '粒狀污染物排放量(kg)', '溫室氣體排放量(kg)']
         }
 
         ap_ef = get_ap_emission_factor(data_dir, csv_files)
 
         # Calculate emissions by region
+        CO2e_emissions = get_emissions_by_region(
+            region_power_generation=pg_data,
+            emission_data=ap_ef,
+            target_emission='CO2e'
+        )
+
         SOx_emissions = get_emissions_by_region(
             region_power_generation=pg_data,
             emission_data=ap_ef,
@@ -139,7 +145,7 @@ def emission_intenisty_module(
             target_emission='PM'
         )
 
-        return pg_data, SOx_emissions, NOx_emissions, PM_emissions
+        return pg_data, CO2e_emissions, SOx_emissions, NOx_emissions, PM_emissions
 
 
     def estimate_emission_intensity(
@@ -153,6 +159,12 @@ def emission_intenisty_module(
         power_generation = calculate_power_generation_with_target(
             pg_wo_target=pg_sum_exclude_solar, 
             target_gen_data=solar_generaion
+        )
+
+        CO2e_intensity = calculate_air_pollution_intensity(
+            ap_data=CO2e_emissions, 
+            pg_data=power_generation,
+            scale=scale
         )
 
         SOx_intensity = calculate_air_pollution_intensity(
@@ -173,13 +185,20 @@ def emission_intenisty_module(
             scale=scale
         )
 
-        return power_generation, SOx_intensity, NOx_intensity, PM_intensity
+        return power_generation, CO2e_intensity, SOx_intensity, NOx_intensity, PM_intensity
 
 
     def power_flow_module():
         pg_flow = get_json_file(
             data_dir=data_dir,
             pg_file=flow_data
+        )
+
+        CO2e_EFs = calculate_power_flow(
+            pg=power_generation,
+            flow=pg_flow,
+            intensity=CO2e_intensity,
+            emission=CO2e_emissions
         )
 
         SOx_EFs = calculate_power_flow(
@@ -203,19 +222,19 @@ def emission_intenisty_module(
             emission=PM_emissions
         )
 
-        return SOx_EFs, NOx_EFs, PM_EFs
+        return CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs
 
 
 
     # emission module
-    pg_data, SOx_emissions, NOx_emissions, PM_emissions = estimate_emissions()
+    pg_data, CO2e_emissions, SOx_emissions, NOx_emissions, PM_emissions = estimate_emissions()
     # emission intensity module
-    power_generation, SOx_intensity, NOx_intensity, PM_intensity = estimate_emission_intensity()
+    power_generation, CO2e_intensity, SOx_intensity, NOx_intensity, PM_intensity = estimate_emission_intensity()
     # power flow module
-    SOx_EFs, NOx_EFs, PM_EFs = power_flow_module()
+    CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs = power_flow_module()
 
 
-    return SOx_EFs, NOx_EFs, PM_EFs
+    return CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs
 
         
 
@@ -233,7 +252,7 @@ def main(_):
     )
 
     # emission intensity module
-    SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module (
+    CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module (
         data_dir=FLAGS.data_dir,
         pg_file='各機組過去發電量20220101-20220331.json',
         station_file='powerplants_info.csv',
@@ -243,6 +262,7 @@ def main(_):
         flow_data='pg_flow_1_3.json'
     )
 
+    logging.info(CO2e_EFs)
     logging.info(SOx_EFs)
     logging.info(NOx_EFs)
     logging.info(PM_EFs)
