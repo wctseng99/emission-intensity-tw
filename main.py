@@ -52,7 +52,8 @@ def estimate_target_power(
     data_dir: Path,
     pg_file: str,
     station_file: str,
-    capacity_file: str
+    capacity_file: str,
+    fuel_type: str
 ) -> pd.DataFrame:
 
     hourly_pg_data = get_hourly_pg_data(
@@ -88,7 +89,7 @@ def estimate_target_power(
     solar_capacity_percentage = calculate_capcity_percentage(
         capacity_data=solar_capacity_info,
         station_data=station_info,
-        fuel_type="太陽能"
+        fuel_type=fuel_type
     )
 
     # Estimate the solar power in different regions with {target} solar power capacity.
@@ -251,7 +252,8 @@ def main(_):
         data_dir=FLAGS.data_dir,
         pg_file=FLAGS.raw_pg_data,
         station_file=FLAGS.station_file,
-        capacity_file=FLAGS.capacity_data
+        capacity_file=FLAGS.capacity_data,
+        fuel_type=FLAGS.target_fuel
     )
 
     # emission intensity module
