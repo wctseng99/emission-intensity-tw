@@ -9,8 +9,6 @@ For more details, see the [Article Publication](https://doi.org/10.1016/j.trd.20
 ```bash
 # Clone the repository
 $ git clone git@github.com:CodeGreen-Labs/emission-intensity-tw.git && cd emission-intensity-tw
-# Install dependencies
-$ poetry shell && poetry install
 ```
 
 ## Usage
