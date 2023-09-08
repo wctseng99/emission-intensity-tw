@@ -26,6 +26,6 @@ $ python main.py
 - Please note that the temporal scope of the power generation data should be synchronized with that of the power flow data.
   
 ## Author
-**Wei-Chun (Jim) Tseng (R10)**
-Email: [wctseng99@gmail.com](wctseng99@gmail.com)
+**Wei-Chun (Jim) Tseng**  
+Email: **[wctseng99@gmail.com](wctseng99@gmail.com)**  
 Contact me if you have any questions*
