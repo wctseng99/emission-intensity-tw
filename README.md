@@ -21,4 +21,3 @@ $ python main.py
 - The selected air pollutants emission factors are based on the emissions and net electricity generation from Auunal Report of TPC.
 - The Greenhouse gas emissions and GHG emission factors are calculated by the methodology 2.2.1 and Fig. 1. in the article mentioned above.
 - Most of the input data and parameters are manipulated or substituted in **main.py**
-- 
