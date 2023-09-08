@@ -32,7 +32,7 @@ from app.module import (
     calculate_air_pollution_intensity,
     calculate_power_flow
 )
-
+# Parameter definition
 flags.DEFINE_string("data_dir", "./data", "Directory for data.")
 flags.DEFINE_string("result_dir", "./results", "Directory for result.")
 flags.DEFINE_string(
@@ -44,8 +44,8 @@ flags.DEFINE_string("capacity_data", "solarpower_capacity.csv",
 flags.DEFINE_string("power_flow_data", "pg_flow_1_3.json",
                     "file for power flow data.")
 flags.DEFINE_string("target_fuel", "太陽能", "name for target fuel.")
-
 FLAGS = flags.FLAGS
+
 
 
 def estimate_target_power(
@@ -53,7 +53,8 @@ def estimate_target_power(
     pg_file: str,
     station_file: str,
     capacity_file: str,
-    fuel_type: str
+    fuel_type: str,
+    capcity_target: float
 ) -> pd.DataFrame:
 
     hourly_pg_data = get_hourly_pg_data(
@@ -95,7 +96,7 @@ def estimate_target_power(
     # Estimate the solar power in different regions with {target} solar power capacity.
     solar_pg_estimation = calculate_pg_with_cf(
         capacity_factor=region_capacity_factor,
-        capcity_target=7.2,
+        capcity_target=capcity_target,
         unit='GW',
         capcity_percentage=solar_capacity_percentage
     )
@@ -253,7 +254,8 @@ def main(_):
         pg_file=FLAGS.raw_pg_data,
         station_file=FLAGS.station_file,
         capacity_file=FLAGS.capacity_data,
-        fuel_type=FLAGS.target_fuel
+        fuel_type=FLAGS.target_fuel,
+        capcity_target=7.2
     )
 
     # emission intensity module
@@ -266,6 +268,7 @@ def main(_):
         target_fuel=FLAGS.target_fuel,
         flow_data=FLAGS.power_flow_data
     )
+    
 
     logging.info(f'GHG emission intenisty: {CO2e_EFs.mean()}')
     logging.info(f'SOx emission intenisty: {SOx_EFs.mean()}')

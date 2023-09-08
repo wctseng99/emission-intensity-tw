@@ -23,3 +23,4 @@ $ python main.py
 - The Greenhouse gas emissions and GHG emission factors are calculated by the methodology 2.2.1 and Fig. 1. in the article mentioned above.
 - The system boundary of emission factor and emission intensity only include the operating phase (combustion emissions/direct emissions).
 - The data only contains the TPC system's generating units.
+- Please note that the temporal scope of the power generation data should be synchronized with that of the power flow data.
