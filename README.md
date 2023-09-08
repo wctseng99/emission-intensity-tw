@@ -17,7 +17,7 @@ $ python main.py
 ## Description
 - The input data for this program is the Open Government Data: [electricity generation of Taiwan Power Company (TPC)](https://data.gov.tw/dataset/37331), which consists of instantaneous electricity generation data at ten-minute intervals over a three-month period.
 - Most of the input data and parameters are manipulated or substituted in **main.py**
-- Please check and update the following files: station_file, capacity_data, and power_flow_data(data year: 2021), if there are any discrepancies with the current information. (Last updated: 2023/08)
+- Please check and update the following files: station_file, capacity_data, and [power_flow_data](https://data.gov.tw/en/datasets/37326)(The latest version of power flow data: 2021), if there are any discrepancies with the current information. (Last updated: 2023/08)
 - The default target energy is solar power; change or add a new one if needed.
 - The selected air pollutants emission factors are based on the emissions and net electricity generation from [Auunal Report of TPC](https://www.taipower.com.tw/upload/43/43_05/111年電業年報.pdf?230829).
 - The Greenhouse gas emissions and GHG emission factors are calculated by the methodology 2.2.1 and Fig. 1. in the article mentioned above.
