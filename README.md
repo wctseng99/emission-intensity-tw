@@ -8,12 +8,13 @@ This repository contains the code for the [E3 Research Group@NTU](https://www.e3
 $ git clone git@github.com:CodeGreen-Labs/emission-intensity-tw.git && cd emission-intensity-tw
 ```
 
-## Usage & Description
+## Usage
 
 ```bash
 $ python main.py
 ```
 
+## Description
 - The input data for this program is the Open Government Data: [electricity generation of Taiwan Power Company (TPC)](https://data.gov.tw/dataset/37331), which consists of instantaneous electricity generation data at ten-minute intervals over a three-month period.
 - Most of the input data and parameters are manipulated or substituted in **main.py**
 - Please check and update the following files: station_file, capacity_data, and power_flow_data(data year: 2021), if there are any discrepancies with the current information. (Last updated: 2023/08)
