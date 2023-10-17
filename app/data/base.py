@@ -33,16 +33,26 @@ def get_station_info(
 
 def get_capacity_info(
     data_dir: str,
-    capacity_file: str
+    capacity_file: str,
+    fuel_type: str
 ) -> Dict[str, float]:
     capacity_data = {}
     file_path = os.path.join(data_dir, capacity_file)
-    capacity_df = pd.read_csv(file_path)
-    # print(capacity_df)
-    for _, row in capacity_df.iterrows():
-        capacity_data[row['Station Name']] = float(
-            row['Installed Capacity(kW)'])
+    capacity_df = pd.read_csv(file_path, encoding='utf-8')
+    
+    # Because offshore wind power data is lacking, it is being replaced with onshore wind power data.
+    if fuel_type == '離岸風電':
+        for _, row in capacity_df.iterrows():
+            
+            if row['Fuel Type'] in ['陸域風電']:
+                capacity_data[row['Station Name']] = float(row['Installed Capacity(kW)'])
+    else:
+        for _, row in capacity_df.iterrows():
+            if row['Fuel Type'] == fuel_type:
+                    capacity_data[row['Station Name']] = float(row['Installed Capacity(kW)'])
+    
     return capacity_data
+        
 
 
 def process_power_generation_data(

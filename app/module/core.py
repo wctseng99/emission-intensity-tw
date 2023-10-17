@@ -9,10 +9,10 @@ from rich.logging import RichHandler
 
 
 def calculate_capacity_factor(
-    hourly_pg: Dict[str, Dict[str, Dict[str, List[float]]]],
-    solar_capacity_data: Dict[str, float],
-    fuel_type: str = "太陽能",
-    scale: str = "regional"
+    hourly_pg: Dict[str, Dict[str, Dict[str, List[float]]]],   
+    capacity_data: Dict[str, float],
+    fuel_type: str,
+    scale: str
 ) -> pd.DataFrame | pd.Series:
 
     def detect_negative_values(
@@ -33,41 +33,40 @@ def calculate_capacity_factor(
     national_power = pd.DataFrame()
     national_capacity: float = 0
     regional_avg_capacity_factor = pd.DataFrame()
-
+    if fuel_type in ["陸域風電", "離岸風電"]:
+        fuel_type = "風力"
     for region, region_data in hourly_pg.items():
         regional_power = pd.DataFrame()
         regional_capacity: float = 0
         for station, station_data in region_data[fuel_type].items():
-            if station in solar_capacity_data:
+            if station in capacity_data:
                 # check if there are negative values, and replace them with zeros.
-                station_data = detect_negative_values(
-                    data=station_data)
+                station_data = detect_negative_values(data=station_data)
 
-                regional_power[station] = station_data
-                regional_capacity += solar_capacity_data[station]
+                regional_power[station] = station_data 
+                regional_capacity += capacity_data[station]
 
                 national_power[station] = station_data
-                national_capacity += solar_capacity_data[station]
+                national_capacity += capacity_data[station]
 
-        regional_capacity_factor = regional_power.sum(
-            axis=1) / regional_capacity
+        regional_capacity_factor = regional_power.sum(axis=1) / regional_capacity
 
         regional_avg_capacity_factor[region] = regional_capacity_factor
 
     # Eastern region is the average of central and southern region, due to the lack of eastern solar power data.
-    if regional_avg_capacity_factor['東部'].isna().all():
-        regional_avg_capacity_factor['東部'] = regional_avg_capacity_factor[[
-            '中部', '南部']].mean(axis=1)
+    if fuel_type in ["太陽能"]:
+        if regional_avg_capacity_factor['東部'].isna().all():
+            regional_avg_capacity_factor['東部'] = regional_avg_capacity_factor[['中部', '南部']].mean(axis=1)
 
     national_capacity_factor = national_power.sum(axis=1) / national_capacity
 
     if scale == 'national':
-        logging.info(f'The avg of regional capcity factor:\n{regional_avg_capcity_factor.mean()}.')
+        logging.info(f'The avg of regional capacity factor:\n{regional_avg_capacity_factor.mean()}.')
         return national_capacity_factor
 
     if scale == 'regional':
-        logging.info(f'The avg of national capcity factor:\n{national_capacity_factor.mean()}.')
-        return regional_avg_capcity_factor
+        logging.info(f'The avg of national capacity factor:\n{national_capacity_factor.mean()}.')
+        return regional_avg_capacity_factor
 
 
 def calculate_capacity_percentage(
@@ -79,6 +78,9 @@ def calculate_capacity_percentage(
     region_capacity = defaultdict(float)
     national_capacity: float = 0
     capacity_percentage = defaultdict(float)
+    
+    if fuel_type in ["陸域風電", "離岸風電"]:
+        fuel_type = "風力"
 
     for station in capacity_data:
         region, fuel = station_data[station]
