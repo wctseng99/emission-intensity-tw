@@ -25,7 +25,7 @@ from app.data import (
 from app.module import (
     # core
     calculate_capacity_factor,
-    calculate_capcity_percentage,
+    calculate_capacity_percentage,
     calculate_pg_with_cf,
     # api
     calculate_power_generation_with_target,
@@ -54,7 +54,7 @@ def estimate_target_power(
     station_file: str,
     capacity_file: str,
     fuel_type: str,
-    capcity_target: float
+    capacity_target: float
 ) -> pd.DataFrame:
 
     hourly_pg_data = get_hourly_pg_data(
@@ -74,7 +74,7 @@ def estimate_target_power(
         capacity_file=capacity_file
     )
 
-    # Calculate capacity facotr of the {fuel type}
+    # Calculate capacity factor of the {fuel type}
     region_capacity_factor = calculate_capacity_factor(
         hourly_pg=hourly_pg_data,
         solar_capacity_data=solar_capacity_info
@@ -87,7 +87,7 @@ def estimate_target_power(
     )
 
     # Calculate solar power capacity percentage in different regions.
-    solar_capacity_percentage = calculate_capcity_percentage(
+    solar_capacity_percentage = calculate_capacity_percentage(
         capacity_data=solar_capacity_info,
         station_data=station_info,
         fuel_type=fuel_type
@@ -96,9 +96,9 @@ def estimate_target_power(
     # Estimate the solar power in different regions with {target} solar power capacity.
     solar_pg_estimation = calculate_pg_with_cf(
         capacity_factor=region_capacity_factor,
-        capcity_target=capcity_target,
+        capacity_target=capacity_target,
         unit='GW',
-        capcity_percentage=solar_capacity_percentage
+        capacity_percentage=solar_capacity_percentage
     )
 
     return solar_pg_estimation
@@ -109,7 +109,7 @@ def emission_intenisty_module(
     pg_file: str,
     station_file: str,
     capacity_file: str,
-    solar_generaion: pd.Series,
+    solar_generation: pd.Series,
     target_fuel: str,
     flow_data: str,
     scale: str = 'regional',  # or national
@@ -169,7 +169,7 @@ def emission_intenisty_module(
         # regional_air_pollution = calculate_regional_air_pollution(air_pollutant)
         power_generation = calculate_power_generation_with_target(
             pg_wo_target=pg_sum_exclude_solar,
-            target_gen_data=solar_generaion
+            target_gen_data=solar_generation
         )
 
         CO2e_intensity = calculate_air_pollution_intensity(
@@ -255,7 +255,7 @@ def main(_):
         station_file=FLAGS.station_file,
         capacity_file=FLAGS.capacity_data,
         fuel_type=FLAGS.target_fuel,
-        capcity_target=7.2
+        capacity_target=7.2
     )
 
     # emission intensity module
@@ -264,7 +264,7 @@ def main(_):
         pg_file=FLAGS.raw_pg_data,
         station_file=FLAGS.station_file,
         capacity_file=FLAGS.capacity_data,
-        solar_generaion=solar_pg_estimation,
+        solar_generation=solar_pg_estimation,
         target_fuel=FLAGS.target_fuel,
         flow_data=FLAGS.power_flow_data
     )
