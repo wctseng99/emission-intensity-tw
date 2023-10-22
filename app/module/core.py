@@ -89,8 +89,7 @@ def calculate_capacity_percentage(
             national_capacity += capacity_data[station]
 
     for region in region_capacity:
-        capacity_percentage[region] = region_capacity[region] / \
-            national_capacity
+        capacity_percentage[region] = region_capacity[region] / national_capacity
 
         logging.info(
             f'{region} capacity percentage: {capacity_percentage[region]}.')

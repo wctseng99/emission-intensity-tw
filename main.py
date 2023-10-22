@@ -273,13 +273,14 @@ def emission_intenisty_module(
 def main(_):
 
     logging.set_verbosity(logging.INFO)
-
-    for data_idx, (raw_pg_data, power_flow_data, data_period) in enumerate(zip(FLAGS.raw_pg_data, FLAGS.power_flow_data, ["1~3", "4~6", "7~9", "10~12"])):
-        print(data_period)
-        pg_estimation_total = pd.DataFrame()
+    data_period_list = ["1~3", "4~6", "7~9", "10~12"]
+    CO2e_EI_year, SOx_EI_year, NOx_EI_year, PM_EI_year = [], [], [], [] 
+    for data_idx, (raw_pg_data, power_flow_data, data_period) in enumerate(zip(FLAGS.raw_pg_data, FLAGS.power_flow_data, data_period_list)):
+        logging.info(f'MONTH : {data_period}')
         
+        pg_estimation_total = pd.DataFrame()
         for fuel_idx, (fuel_type, capacity_target) in enumerate(zip(FLAGS.fuel_type, FLAGS.capacity_target)):
-            print(fuel_type)
+            logging.info(f'FUEL : {fuel_type}')
             pg_estimation, region_capacity_factor, national_capacity_factor = estimate_target_power(
                 data_dir=FLAGS.data_dir,
                 pg_file=raw_pg_data,
@@ -288,7 +289,6 @@ def main(_):
                 fuel_type=fuel_type,
                 capacity_target=float(capacity_target)
             )
-
             pg_estimation_total = pg_estimation if pg_estimation_total.empty else pg_estimation_total.add(pg_estimation, fill_value=0)
 
         CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module(
@@ -300,10 +300,19 @@ def main(_):
             flow_data=power_flow_data
         )
 
-        for emission, name in zip([CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs], ["CO2e", "SOx", "NOx", "PM"]):
-            logging.info(f'{name} emission intensity: \n{emission.mean()}')
+        CO2e_EI_year.append(CO2e_EFs.mean())
+        SOx_EI_year.append(SOx_EFs.mean())
+        NOx_EI_year.append(NOx_EFs.mean())
+        PM_EI_year.append(PM_EFs.mean())
 
-
+    logging.info(f'The excluded fuel types: {FLAGS.fuel_type}.')
+    for (data, EI_name) in zip([CO2e_EI_year, SOx_EI_year, NOx_EI_year, PM_EI_year], ["CO2e", "SOx", "NOx", "PM"]):
+        for i, data_period in enumerate(data_period_list):
+            logging.info(f'{data_period}, {EI_name} emission intensity (g/kWh): \n{data[i]}')
+        data = pd.DataFrame(data)
+        logging.info(f'Annual average {EI_name} emission intensity (g/kWh): \n{data.mean()}')
+        # Calculate national average directly 
+        logging.info(f'Annual national average {EI_name} emission intensity (g/kWh): {data.mean().mean()}')
 
 if __name__ == "__main__":
     app.run(main)

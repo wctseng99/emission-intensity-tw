@@ -51,8 +51,6 @@ def get_selected_pg_data(
     exclude_fuel: list
 ) -> Dict:
 
-    logging.info(f'The excluded fuel types: {exclude_fuel}.')
-
     exclude_fuel_types = ["風力" if item in ["陸域風電", "離岸風電"] else item for item in exclude_fuel]
 
     selected_pg = pd.DataFrame()
