@@ -9,3 +9,9 @@ from app.module.api import(
     calculate_air_pollution_intensity,
     calculate_power_flow
 )
+
+
+from app.module.figure import(
+    create_figure_CF,
+    create_figure_EI_total,
+)

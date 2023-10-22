@@ -30,8 +30,13 @@ from app.module import (
     # api
     calculate_power_generation_with_target,
     calculate_air_pollution_intensity,
-    calculate_power_flow
+    calculate_power_flow,
+    # figure
+    create_figure_CF,
+    create_figure_EI_total,
 )
+
+
 # Parameter definition
 flags.DEFINE_string("data_dir", "./data", "Directory for data.")
 flags.DEFINE_string("result_dir", "./results", "Directory for result.")
@@ -67,7 +72,7 @@ flags.DEFINE_list("capacity_target",
                     "0.24",
                   ], 
                   "target capacity of target fuel")
-#flags.DEFINE_list("figure_limits",[[00, 700], [0.0, 0.13], [0.0, 0.20], [0.00, 0.0065]])
+flags.DEFINE_list("figure_limits",[[00, 700], [0.0, 0.13], [0.0, 0.20], [0.00, 0.0065]], "fixed y-axis upper and lower bounds for EI figures")
 FLAGS = flags.FLAGS
 
 
@@ -273,8 +278,10 @@ def emission_intenisty_module(
 def main(_):
 
     logging.set_verbosity(logging.INFO)
+
     data_period_list = ["1~3", "4~6", "7~9", "10~12"]
     CO2e_EI_year, SOx_EI_year, NOx_EI_year, PM_EI_year = [], [], [], [] 
+
     for data_idx, (raw_pg_data, power_flow_data, data_period) in enumerate(zip(FLAGS.raw_pg_data, FLAGS.power_flow_data, data_period_list)):
         logging.info(f'MONTH : {data_period}')
         
@@ -289,7 +296,8 @@ def main(_):
                 fuel_type=fuel_type,
                 capacity_target=float(capacity_target)
             )
-            pg_estimation_total = pg_estimation if pg_estimation_total.empty else pg_estimation_total.add(pg_estimation, fill_value=0)
+            pg_estimation_total = pg_estimation if pg_estimation_total.empty else pg_estimation_total.add(pg_estimation, fill_value=0)            
+            region_capacity_factor.to_csv(f'{FLAGS.result_dir}\\region_capacity_factor_{fuel_type}_{data_period}.csv', index=False, encoding='utf-8-sig') 
 
         CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module(
             data_dir=FLAGS.data_dir,
@@ -300,19 +308,28 @@ def main(_):
             flow_data=power_flow_data
         )
 
+        CO2e_EFs.to_csv(f'{FLAGS.result_dir}\\CO2e_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
+        SOx_EFs.to_csv(f'{FLAGS.result_dir}\\SOx_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
+        NOx_EFs.to_csv(f'{FLAGS.result_dir}\\NOx_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
+        PM_EFs.to_csv(f'{FLAGS.result_dir}\\PM_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
+        
         CO2e_EI_year.append(CO2e_EFs.mean())
         SOx_EI_year.append(SOx_EFs.mean())
         NOx_EI_year.append(NOx_EFs.mean())
         PM_EI_year.append(PM_EFs.mean())
 
+    create_figure_CF(FLAGS.result_dir, "太陽能", "region_capacity_factor")
+    create_figure_CF(FLAGS.result_dir, "陸域風電", "region_capacity_factor")
+    create_figure_CF(FLAGS.result_dir, "離岸風電", "region_capacity_factor")
+    create_figure_EI_total(FLAGS.result_dir, ["CO2e_EI", "SOx_EI", "NOx_EI", "PM_EI",], FLAGS.figure_limits)
+
     logging.info(f'The excluded fuel types: {FLAGS.fuel_type}.')
     for (data, EI_name) in zip([CO2e_EI_year, SOx_EI_year, NOx_EI_year, PM_EI_year], ["CO2e", "SOx", "NOx", "PM"]):
         for i, data_period in enumerate(data_period_list):
             logging.info(f'{data_period}, {EI_name} emission intensity (g/kWh): \n{data[i]}')
-        data = pd.DataFrame(data)
-        logging.info(f'Annual average {EI_name} emission intensity (g/kWh): \n{data.mean()}')
+        logging.info(f'Annual average {EI_name} emission intensity (g/kWh): \n{pd.DataFrame(data).mean()}')
         # Calculate national average directly 
-        logging.info(f'Annual national average {EI_name} emission intensity (g/kWh): {data.mean().mean()}')
+        logging.info(f'Annual national average {EI_name} emission intensity (g/kWh): {pd.DataFrame(data).mean().mean()}')
 
 if __name__ == "__main__":
     app.run(main)
