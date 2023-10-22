@@ -19,8 +19,7 @@ def calculate_capacity_factor(
         data: list
     ) -> list:
         if np.any(np.array(data) < 0):
-            logging.info(
-                f'There is the station with negative power values: region: {region}, station: {station}.')
+            #logging.info(f'There is the station with negative power values: region: {region}, station: {station}.')
 
             neg_station = np.array(data)
             neg_station[neg_station < 0] = 0
@@ -61,11 +60,11 @@ def calculate_capacity_factor(
     national_capacity_factor = national_power.sum(axis=1) / national_capacity
 
     if scale == 'national':
-        logging.info(f'The avg of regional capacity factor:\n{regional_avg_capacity_factor.mean()}.')
+        #logging.info(f'The avg of national capacity factor:\n{national_capacity_factor.mean()}.')
         return national_capacity_factor
 
     if scale == 'regional':
-        logging.info(f'The avg of national capacity factor:\n{national_capacity_factor.mean()}.')
+        #logging.info(f'The avg of regional capacity factor:\n{regional_capacity_factor.mean()}.')
         return regional_avg_capacity_factor
 
 
