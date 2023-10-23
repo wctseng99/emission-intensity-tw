@@ -43,7 +43,7 @@ $ python main.py
 | 離島     | 0.35%         | 5.24%         | 0%
 
 As of today, there’s only one governmental (TPC) operating offshore wind power plant,  which is 離岸一期 in the central region.  
-We use onshore wind power data to substitute for offshore wind power data for subsequent calculations, provided that the capacity factor trends are similar between the two."
+We use onshore wind power data to substitute for offshore wind power data for subsequent calculations, provided that the capacity factor trends are similar between the two.
 
 
  - National Capacity Factor:
