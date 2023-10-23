@@ -29,7 +29,6 @@ $ python main.py
 
 ## Results
 2021 (capacity target: solar 7.2 GW, onshore wind 0.74 GW, offshore wind 0.24 GW)  
-
 2050 (capacity target: solar 40-80 GW, onshore wind 1.2 GW, offshore wind 40-55 GW)
 
 
