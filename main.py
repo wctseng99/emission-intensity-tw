@@ -285,22 +285,36 @@ def main(_):
 
     for data_idx, (raw_pg_data, power_flow_data, data_period) in enumerate(zip(FLAGS.raw_pg_data, FLAGS.power_flow_data, data_period_list)):
         pg_estimation_total = pd.DataFrame()
-        for fuel_idx, (fuel_type, capacity_target) in enumerate(zip(FLAGS.fuel_type, FLAGS.capacity_target)):
+        for fuel_idx, (fuel_type, capacity_target) in enumerate(zip(FLAGS.fuel_type, FLAGS.capacity_target)):     
             pg_estimation, region_capacity_factor, national_capacity_factor, capacity_percentage = estimate_target_power(
+                data_dir=FLAGS.data_dir,
+                pg_file=raw_pg_data,
+                station_file=FLAGS.station_file,
+                capacity_file=FLAGS.capacity_data,
+                # Because offshore wind power data is lacking, it is being replaced with onshore wind power data.
+                fuel_type='陸域風電' if fuel_type == '離岸風電' else fuel_type,
+                capacity_target=float(capacity_target)
+            )  
+            pg_estimation_total = pg_estimation if pg_estimation_total.empty else pg_estimation_total.add(pg_estimation, fill_value=0)            
+            logging.info(f'Month={data_period}, Fuel={fuel_type}') 
+            logging.info(f'The avg of national capacity factor:{national_capacity_factor.mean()}.')
+            logging.info(f'national power generation (kWh): {pg_estimation.sum().sum()}.')
+
+            # for displaying real result of offshore wind power
+            if fuel_type == '離岸風電':
+                pg_estimation, region_capacity_factor, national_capacity_factor, capacity_percentage = estimate_target_power(
                 data_dir=FLAGS.data_dir,
                 pg_file=raw_pg_data,
                 station_file=FLAGS.station_file,
                 capacity_file=FLAGS.capacity_data,
                 fuel_type=fuel_type,
                 capacity_target=float(capacity_target)
-            )        
-            logging.info(f'Month={data_period}, Fuel={fuel_type}') 
-            logging.info(f'The avg of national capacity factor:{national_capacity_factor.mean()}.')
-            logging.info(f'national power generation (kWh): {pg_estimation.sum().sum()}.')
+                )
             #logging.info(f'The avg of regional capacity factor:\n{region_capacity_factor.mean()}.')
-            pg_estimation_total = pg_estimation if pg_estimation_total.empty else pg_estimation_total.add(pg_estimation, fill_value=0)            
+            for region in capacity_percentage:
+                logging.info(f'{region} capacity percentage: {capacity_percentage[region]}.')
             region_capacity_factor.to_csv(f'{FLAGS.result_dir}\\region_capacity_factor_{fuel_type}_{data_period}.csv', index=False, encoding='utf-8-sig') 
-        
+            
 
         CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module(
             data_dir=FLAGS.data_dir,

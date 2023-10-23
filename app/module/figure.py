@@ -46,7 +46,7 @@ def create_figure_CF(
     plt.subplots_adjust(top=0.9, hspace=0.4, wspace=0.4)
     fig.suptitle(f'{fuel_type_name} : {target}', fontsize=16)
     handles, labels = ax.get_legend_handles_labels()
-    #legend = fig.legend(handles, labels, loc="lower center", fontsize=20, ncol=4, bbox_to_anchor=(0.5, 0))
+    legend = fig.legend(handles, labels, loc="lower center", fontsize=20, ncol=4, bbox_to_anchor=(0.5, 0))
     Path(f'{result_dir}\\figure').mkdir(parents=True, exist_ok=True)
     plt.savefig(f'{result_dir}\\figure\\{fuel_type}_{target}.png', bbox_inches='tight')
 
@@ -83,7 +83,7 @@ def create_figure_EI_total(
     plt.tight_layout()
     plt.subplots_adjust(top=0.9, hspace=0.4, wspace=0.4)
     handles, labels = ax.get_legend_handles_labels()
-    #legend = fig.legend(handles, labels, loc="lower center", fontsize=20, ncol=4, bbox_to_anchor=(0.5, 0))
+    legend = fig.legend(handles, labels, loc="lower center", fontsize=20, ncol=4, bbox_to_anchor=(0.5, 0))
     Path(f'{result_dir}\\figure').mkdir(parents=True, exist_ok=True)
     plt.savefig(f'{result_dir}\\figure\\total_EI.png', bbox_inches='tight')
 

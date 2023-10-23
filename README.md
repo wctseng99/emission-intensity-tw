@@ -29,9 +29,21 @@ $ python main.py
 
 ## Results
 2021 (capacity target: solar 7.2 GW, onshore wind 0.74 GW, offshore wind 0.24 GW)  
-
 2050 (capacity target: solar 40-80 GW, onshore wind 1.2 GW, offshore wind 40-55 GW)
 
+
+ - Region Capacity percentage: 
+
+| Region   | Solar         | Onshore Wind          | Offshore Wind
+| -------- | ------------- | ------------- |  ------------- |
+| 南部     | 58.67%        | 1.66%         | 0%
+| 北部     | 0.99%         | 21.36%        | 0%
+| 中部     | 39.99%        | 71.73%        | 100% 
+| 東部     | 0%            | 0%            | 0%
+| 離島     | 0.35%         | 5.24%         | 0%
+
+As of today, there’s only one governmental (TPC) operating offshore wind power plant,  which is 離岸一期 in the central region.  
+We use onshore wind power data to substitute for offshore wind power data for subsequent calculations, provided that the capacity factor trends are similar between the two."
 
 
  - National Capacity Factor:
@@ -42,17 +54,6 @@ $ python main.py
 | 4~6   | 0.1642 | 0.2089 |
 | 7~9   | 0.1984 | 0.1204 |
 | 10~12 | 0.1418 | 0.4332 |
-
-
- - Region Capacity percentage: 
-
-| Region   | Solar         | Wind          |
-| -------- | ------------- | ------------- |
-| 南部     | 58.67%        | 1.66%         |
-| 北部     | 0.99%         | 21.36%        |
-| 中部     | 39.99%        | 71.73%        |
-| 東部     | 0%            | 0%            |
-| 離島     | 0.35%         | 5.24%         |
 
 
  - Annual power generation (GWh): 
