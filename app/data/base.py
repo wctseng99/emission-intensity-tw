@@ -33,16 +33,19 @@ def get_station_info(
 
 def get_capacity_info(
     data_dir: str,
-    capacity_file: str
+    capacity_file: str,
+    fuel_type: str
 ) -> Dict[str, float]:
     capacity_data = {}
     file_path = os.path.join(data_dir, capacity_file)
-    capacity_df = pd.read_csv(file_path)
-    # print(capacity_df)
+    capacity_df = pd.read_csv(file_path, encoding='utf-8')
+    
     for _, row in capacity_df.iterrows():
-        capacity_data[row['Station Name']] = float(
-            row['Installed Capacity(kW)'])
+        if row['Fuel Type'] == fuel_type:
+                capacity_data[row['Station Name']] = float(row['Installed Capacity(kW)'])
+    
     return capacity_data
+        
 
 
 def process_power_generation_data(

@@ -39,23 +39,22 @@ def calculate_air_pollution_intensity(
 
 
 def calculate_power_flow(
-    pg: Dict, 
-    flow: Dict, 
+    pg: dict, 
+    flow: dict, 
     intensity: pd.DataFrame ,
     emission: pd.DataFrame
 ):
 
-    pg_flow = copy.deepcopy(pg)
-    em_flow = copy.deepcopy(emission)
-
-    for type in flow:
+    pg_flow = copy.deepcopy(pg).fillna(0)
+    em_flow = copy.deepcopy(emission).fillna(0)
+    for type in flow:    
         origin = flow[type]['from']
         destination = flow[type]['to']
         #electricity flow
         pg_flow[destination] = list(map(lambda x,y: x+y, pg_flow[destination], flow[type]['powerkWh']))
         pg_flow[origin] = list(map(lambda x,y: x-y, pg_flow[origin], flow[type]['powerkWh']))
         # emission flow  
-        em = list(map(lambda x,y: x*y, flow[type]['powerkWh'], intensity[origin]))
+        em = list(map(lambda x,y: x*y, flow[type]['powerkWh'], intensity[origin].fillna(0))) 
         em_flow[destination] = list(map(lambda x,y: x+y, em_flow[destination], em))
         em_flow[origin] =list(map(lambda x,y: x-y, em_flow[origin], em))
     # intensity flow

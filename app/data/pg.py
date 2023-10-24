@@ -20,8 +20,7 @@ from app.data.base import(
 def get_hourly_pg_data(
     data_dir: Path,
     pg_file: str,
-    station_file: str,
-    capacity_file: str 
+    station_file: str
 ) -> Dict:
     # Load power generation data
     power_generation_data = get_json_file(
@@ -33,12 +32,6 @@ def get_hourly_pg_data(
     station_info = get_station_info(
         data_dir=data_dir, 
         station_file=station_file
-    )
-
-    # Load solar power capacity
-    solar_capacity_info = get_capacity_info(
-        data_dir=data_dir, 
-        capacity_file=capacity_file
     )
 
     # Process power generation data
@@ -54,20 +47,20 @@ def get_hourly_pg_data(
     return hourly_pg_data
 
 def get_selected_pg_data(
-    pg: Dict,
-    exclude_fuel: List
+    pg: dict,
+    exclude_fuel: list
 ) -> Dict:
+
+    exclude_fuel_types = ["風力" if item in ["陸域風電", "離岸風電"] else item for item in exclude_fuel]
 
     selected_pg = pd.DataFrame()
 
     for region, fuel_dict in pg.items():
         region_sum = []
         for fuel, unit_dict in fuel_dict.items():
-            if fuel not in exclude_fuel:
+            if fuel not in exclude_fuel_types:
                 for unit, power_values in unit_dict.items():
                     region_sum.append(power_values)
         selected_pg[region] = np.sum(region_sum, axis=0).tolist()
-
-    logging.info(f'The excluded fuel types: {exclude_fuel}.')
 
     return selected_pg
