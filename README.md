@@ -81,7 +81,7 @@ Threfore, we use onshore wind power data to substitute for offshore wind power d
 
 #### National Grid Emission Intensity
 
-|           | $CO_{2e} (g/kWh)$ | $SO_x (g/kWh)$ | $NO_x (g/kWh)$ | $PM (g/kWh)$ |
+|           | CO2e (g/kWh) | SOx (g/kWh) | NOx (g/kWh) | PM (g/kWh) |
 |-----------|-------------|------------|------------|------------|
 | 2021      | 453.26      | 0.069534   | 0.12055176 | 0.00402305 |
 | 2050 min  | 313.06      | 0.046971   | 0.08207807 | 0.00272495 |
