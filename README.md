@@ -25,10 +25,9 @@ $ python main.py
 - The system boundary of emission factor and emission intensity only include the operating phase (combustion emissions/direct emissions).
 - The data only contains the TPC system's generating units.
 - Please note that the temporal scope of the power generation data should be synchronized with that of the power flow data.
-- As of today, there’s only one TPC operating offshore wind power plant: 離岸一期 in the central region. Threfore, we use onshore wind power data to substitute for offshore wind power data for subsequent calculations, provided that the capacity factor trends are similar between the two.
+- As of today, there is only one TPC operating offshore wind power plant: 離岸一期 in the central region. Threfore, we use onshore wind power data to substitute for offshore wind power data for subsequent calculations, provided that the capacity factor trends are similar between the two.
 
 
 ## Contact information
 ***Contributors:** Wei-Chun (Jim) Tseng, Hsun-Yen Wu*  
 ***E-mail:** wctseng99@gmail.com*  
-**Please feel free to contact me if you have any questions.**
