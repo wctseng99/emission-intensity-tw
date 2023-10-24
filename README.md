@@ -28,17 +28,18 @@ $ python main.py
   
 
 
-## Key findings
+## Results
 
 ### Scenarios:
-**installed capacity**
-- 2021 scenario: solar 7.2 GW, onshore wind 0.74 GW, offshore wind 0.24 GW
-- 2050 scenarios: solar 40-80 GW, onshore wind 1.2 GW, offshore wind 40-55 GW
-- 2050 min: solar 40 GW, onshore wind 1.2 GW, offshore wind 40 GW
-- 2050 max: solar 80 GW, onshore wind 1.2 GW, offshore wind 55 GW
+#### installed capacity:
+- **2021:** solar 7.2 GW, onshore wind 0.74 GW, offshore wind 0.24 GW
+- **2050:** solar 40-80 GW, onshore wind 1.2 GW, offshore wind 40-55 GW
+- **2050 min:** solar 40 GW, onshore wind 1.2 GW, offshore wind 40 GW
+- **2050 max:** solar 80 GW, onshore wind 1.2 GW, offshore wind 55 GW
 
+### Key findings
 
-### Region Capacity percentage: 
+#### Region Capacity percentage: 
 
 | Region   | Solar         | Onshore Wind          | Offshore Wind
 | -------- | ------------- | ------------- |  ------------- |
@@ -52,7 +53,7 @@ As of today, there’s only one TPC operating offshore wind power plant: 離岸�
 Threfore, we use onshore wind power data to substitute for offshore wind power data for subsequent calculations, provided that the capacity factor trends are similar between the two.
 
 
-### National Capacity Factor:
+#### National Capacity Factor:
 
 | Month | solar  | wind   |
 |-------|--------|--------|
@@ -62,7 +63,7 @@ Threfore, we use onshore wind power data to substitute for offshore wind power d
 | 10~12 | 0.1418 | 0.4332 |
 
 
-### Annual power generation (GWh): 
+#### Annual power generation (GWh): 
 
 |        | Month   | Solar        | Onshore Wind          | Offshore Wind          |
 |--------|---------|--------------|-----------------------|------------------------|
@@ -80,7 +81,7 @@ Threfore, we use onshore wind power data to substitute for offshore wind power d
 |        | 10~12   | 25.052       | 1.139                 | 5.224                  |
 
 
-### Emission Intensity (National)
+#### Emission Intensity (National)
 
 |           | CO2e (g/kWh) | SOx (g/kWh) | NOx (g/kWh) | PM (g/kWh) |
 |-----------|-------------|------------|------------|------------|
