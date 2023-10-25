@@ -1,6 +1,6 @@
 # Grid emission intensity
 
-#### This repository contains the code for the [E3 Research Group@NTU](https://www.e3group.caece.net) **Hourly Grid emission intensity - Taiwan** implementations. For more details, please read the Article Publication: 
+#### This repository contains the code for the [E3 Research Group@NTU](https://www.e3group.caece.net) **Hourly grid emission intensity - Taiwan** implementations. For more details, please read the article publication: 
 ***Wei-Chun Tseng and I-Yun Lisa Hsieh (2023). [Impacts of electric fleet charging patterns under different solar power penetration levels: Hourly grid variations and operating emissions](https://doi.org/10.1016/j.trd.2023.103848). Transportation Research Part D: Transport and Environment.***
 
 ## Installation
