@@ -2,7 +2,7 @@
 ## Results
 ### capacity target
 
-2021 : solar 7.2 GW, onshore wind 0.74 GW, offshore wind 0.24 GW
+2021 : solar 7.2 GW, onshore wind 0.74 GW, offshore wind 0.24 GW 
 2050 : solar 40-80 GW, onshore wind 1.2 GW, offshore wind 40-55 GW
 
 
