@@ -60,7 +60,11 @@ def process_power_generation_data(
         fuel = data['records']['NET_P'][i]['FUEL_TYPE']
         unit = data['records']['NET_P'][i]['UNIT_NAME']
         net_power = data['records']['NET_P'][i]['NET_P']
-        date = data['records']['NET_P'][i]['DATE']
+        try:
+            date = data['records']['NET_P'][i]['DATE']
+        except Exception as e:
+            # logging.warning(f"New Data format: Switching to backup method.")
+            date = data['records']['NET_P'][i]['DATETIME']
         try:
             station_name = unit
             region, _ = station_info[station_name]
@@ -70,8 +74,7 @@ def process_power_generation_data(
             missing_station[station_name].append((fuel, date, net_power))
 
     if missing_station:
-        logging.info(
-            f'Please Check the new stations or errors: {missing_station.keys()}.')
+        logging.warning(f'Please Check the new stations or errors: {missing_station.keys()}.')
 
     return pg_data
 
@@ -92,6 +95,3 @@ def compute_hourly_data(
                 hourly_data[region][fuel_type][unit] = hourly_values
 
     return hourly_data
-
-
-
