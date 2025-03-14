@@ -10,15 +10,28 @@ from collections import defaultdict
 
 def calculate_power_generation_with_target(
     pg_wo_target: pd.DataFrame, 
-    target_gen_data: pd.DataFrame
+    target_gen_data: pd.DataFrame,
+    mode: str = 'original'
 ) -> pd.DataFrame:
+    
+    if mode == 'original':
 
-    power_generation = pd.DataFrame()
-    for region in target_gen_data:
-        if region == '離島':
-            continue
-        power_generation[region] = list(map(lambda a,b: a + b, pg_wo_target[region], target_gen_data[region]))
-    return power_generation
+        power_generation = pd.DataFrame()
+        for region in target_gen_data:
+            if region == '離島':
+                continue
+            power_generation[region] = list(map(lambda a,b: a + b, pg_wo_target[region], target_gen_data[region]))
+
+        return power_generation # net electricity generation
+    elif mode == 'percentage':
+        power_generation = pd.DataFrame()
+        for region in target_gen_data:
+            if region == '離島':
+                continue
+            power_generation[region] = list(map(lambda a,b: (a - b) + b, pg_wo_target[region], target_gen_data[region]))
+
+        return power_generation # net electricity generation
+    
 
 def calculate_air_pollution_intensity(
     ap_data: pd.DataFrame, 

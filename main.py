@@ -65,12 +65,12 @@ flags.DEFINE_list("power_flow_data",
                   "file for power flow data.")
 flags.DEFINE_list("datetime_range", 
                   [
-                    pd.date_range(start="2024-05-01 00:00:00", end="2024-07-31 23:00:00", freq='H'),
-                    pd.date_range(start="2024-08-01 00:00:00", end="2024-10-31 23:00:00", freq='H'),
-                #     pd.date_range(start="2021-01-01 00:00:00", end="2021-03-31 23:00:00", freq='H'),
-                #     pd.date_range(start="2021-04-01 00:00:00", end="2021-06-30 23:00:00", freq='H'),
-                #     pd.date_range(start="2021-07-01 00:00:00", end="2021-09-30 23:00:00", freq='H'),
-                #     pd.date_range(start="2021-10-01 00:00:00", end="2021-12-31 23:00:00", freq='H')
+                    pd.date_range(start="2024-05-01 00:00:00", end="2024-07-31 23:00:00", freq='h'),
+                    pd.date_range(start="2024-08-01 00:00:00", end="2024-10-31 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-01-01 00:00:00", end="2021-03-31 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-04-01 00:00:00", end="2021-06-30 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-07-01 00:00:00", end="2021-09-30 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-10-01 00:00:00", end="2021-12-31 23:00:00", freq='h')
                   ],
                   "datetime_range.")
 
@@ -172,7 +172,7 @@ def emission_intenisty_module(
     data_dir: Path,
     pg_file: str,
     station_file: str,
-    generation: pd.Series,
+    generation: pd.Series, # =pg_estimation
     fuel_type: list,
     flow_data: str,
     scale: str = 'regional',  # regional or national

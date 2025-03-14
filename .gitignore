@@ -1,32 +1,12 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
 
 # ---- Python ----
-__pycache__/
 **/__pycache__/
-*.py[cod]
-*.so
-*.pyd
-*.dll
-*.dylib
 
 # ---- 虛擬環境 ----
 venv/
-.venv/
-env/
-.env/
-
-# ---- 日誌與暫存檔案 ----
-*.log
-*.out
-*.tmp
-*.cache
-*.swp
-*.swo
 
 # ---- 作業系統相關 ----
-Thumbs.db
-ehthumbs.db
-Desktop.ini
 **/.DS_Store
 $RECYCLE.BIN/
 
@@ -34,5 +14,5 @@ $RECYCLE.BIN/
 .vscode/
 
 # ---- User資料夾 ----
-_DOCS
+docs/
 data/
