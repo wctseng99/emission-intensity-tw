@@ -13,11 +13,13 @@ regions_mapping = {
     "北部": "North",
     "中部": "Center",
     "東部": "East",
-    "離島": "Island"
+    "離島": "Island",
+    "全台": "National"
 }
 
 def create_figure_CF(
     result_dir: str,
+    data_period_list: str,
     fuel_type: str, 
     target: str
     ):
@@ -29,8 +31,8 @@ def create_figure_CF(
     for i, region in enumerate(["北部", "中部", "南部", "東部", "離島"]):
         region_name = regions_mapping.get(region, "Unknown")
         ax = axes[i]
-        for data_period in ["1~3", "4~6", "7~9", "10~12"]:
-            df = pd.read_csv(f'{result_dir}\\{target}_{fuel_type}_{data_period}.csv', encoding="utf-8")
+        for data_period in data_period_list:
+            df = pd.read_csv(rf'{result_dir}/{target}_{fuel_type}_{data_period}.csv', encoding="utf-8")
             region_data = []
             for hr in range(24):
                 region_data.append(df[region][df.index % 24 == hr].mean())
@@ -47,26 +49,27 @@ def create_figure_CF(
     fig.suptitle(f'{fuel_type_name} : {target}', fontsize=16)
     handles, labels = ax.get_legend_handles_labels()
     legend = fig.legend(handles, labels, loc="lower center", fontsize=20, ncol=4, bbox_to_anchor=(0.5, 0))
-    Path(f'{result_dir}\\figure').mkdir(parents=True, exist_ok=True)
-    plt.savefig(f'{result_dir}\\figure\\{fuel_type}_{target}.png', bbox_inches='tight')
+    Path(rf'{result_dir}/figure').mkdir(parents=True, exist_ok=True)
+    plt.savefig(rf'{result_dir}/figure/{fuel_type}_{target}.png', bbox_inches='tight')
 
     return
 
 def create_figure_EI_total(
-    result_dir: str, 
+    result_dir: str,
+    data_period_list: str, 
     targets: list,
     limits: list,
     ):
 
-    fig, axes = plt.subplots(4, 4, figsize=(20, 16), sharex=True, sharey='row') 
+    fig, axes = plt.subplots(4, 5, figsize=(24, 16), sharex=True, sharey='row') 
     for i, (target, limit) in enumerate(zip(targets, limits)):
-        for j, region in enumerate(["北部", "中部", "南部", "東部"]):
+        for j, region in enumerate(["北部", "中部", "南部", "東部", "全台"]):
             region_name = regions_mapping.get(region, "Unknown")
             ax = axes[i, j]
             if j == 0:
                 ax.set_ylabel(f'{target} (g/kWh)', fontsize=20)  
-            for data_period in ["1~3", "4~6", "7~9", "10~12"]:
-                df = pd.read_csv(f'{result_dir}\\{target}_{data_period}.csv', encoding="utf-8")
+            for data_period in data_period_list:
+                df = pd.read_csv(rf'{result_dir}/{target}_{data_period}.csv', encoding="utf-8")
                 region_data = []
                 for hr in range(24):
                     region_data.append(df[region][df.index % 24 == hr].mean())
@@ -84,8 +87,8 @@ def create_figure_EI_total(
     plt.subplots_adjust(top=0.9, hspace=0.4, wspace=0.4)
     handles, labels = ax.get_legend_handles_labels()
     legend = fig.legend(handles, labels, loc="lower center", fontsize=20, ncol=4, bbox_to_anchor=(0.5, 0))
-    Path(f'{result_dir}\\figure').mkdir(parents=True, exist_ok=True)
-    plt.savefig(f'{result_dir}\\figure\\total_EI.png', bbox_inches='tight')
+    Path(rf'{result_dir}/figure').mkdir(parents=True, exist_ok=True)
+    plt.savefig(rf'{result_dir}/figure/total_EI.png', bbox_inches='tight')
 
     return
 

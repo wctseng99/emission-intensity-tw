@@ -26,10 +26,10 @@ def get_ap_emission_factor(
     airPollution: pd.DataFrame = merged_df[['硫氧化物排放量(kg)', '氮氧化物排放量(kg)', '粒狀污染物排放量(kg)', '溫室氣體排放量係數(kg/kwh)']]
     
     df: pd.DataFrame = pg.merge(airPollution, how='inner', left_index=True, right_index=True)
-    df['SOx (g/kWh)'] = df['硫氧化物排放量(kg)'].mul(1000) / df['淨發電量(度)']
-    df['NOx (g/kWh)'] = df['氮氧化物排放量(kg)'].mul(1000) / df['淨發電量(度)']
-    df['PM (g/kWh)'] = df['粒狀污染物排放量(kg)'].mul(1000) / df['淨發電量(度)']
-    df['CO2e (g/kWh)'] = df['溫室氣體排放量係數(kg/kwh)'].mul(1000)
+    df['SOx (g/kWh)'] = df['硫氧化物排放量(kg)'].astype(float).mul(1000) / df['淨發電量(度)'].astype(float)
+    df['NOx (g/kWh)'] = df['氮氧化物排放量(kg)'].astype(float).mul(1000) / df['淨發電量(度)'].astype(float)
+    df['PM (g/kWh)'] = df['粒狀污染物排放量(kg)'].astype(float).mul(1000) / df['淨發電量(度)'].astype(float)
+    df['CO2e (g/kWh)'] = df['溫室氣體排放量係數(kg/kwh)'].astype(float).mul(1000)
     df.set_index('電廠名稱', inplace=True)
     
     return df

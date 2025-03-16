@@ -39,38 +39,68 @@ from app.module import (
 
 
 # Parameter definition
-flags.DEFINE_string("data_dir", "./data", "Directory for data.")
-flags.DEFINE_string("result_dir", "./results", "Directory for result.")
+flags.DEFINE_string("data_dir", "./data/2024", "Directory for data.") # year!!!
+flags.DEFINE_string("result_dir", "./results/2024", "Directory for result.") # year!!!
 flags.DEFINE_string("station_file", "powerplants_info.csv","file for power plant information.")
 flags.DEFINE_string("capacity_data", "capacity.csv","file for target energy capacity data.")
 flags.DEFINE_list("raw_pg_data", 
                   [
-                    "各機組過去發電量20220101-20220331.json", 
-                    "各機組過去發電量20220401-20220630.json", 
-                    "各機組過去發電量20220701-20220930.json", 
-                    "各機組過去發電量20221001-20221231.json",
+                    "各機組過去發電量20240501-20240731.json", 
+                    "各機組過去發電量20240801-20241031.json", 
+                    # "各機組過去發電量20220101-20220331.json", 
+                    # "各機組過去發電量20220401-20220630.json", 
+                    # "各機組過去發電量20220701-20220930.json", 
+                    # "各機組過去發電量20221001-20221231.json",
                   ],
                   "file for power generation.")
 flags.DEFINE_list("power_flow_data", 
                   [
-                    "pg_flow_1_3.json", 
-                    "pg_flow_4_6.json", 
-                    "pg_flow_7_9.json", 
-                    "pg_flow_10_12.json",
+                    "pg_flow_5_7.json", 
+                    "pg_flow_8_10.json", 
+                    # "pg_flow_1_3.json", 
+                    # "pg_flow_4_6.json", 
+                    # "pg_flow_7_9.json", 
+                    # "pg_flow_10_12.json",
                   ], 
                   "file for power flow data.")
+flags.DEFINE_list("datetime_range", 
+                  [
+                    pd.date_range(start="2024-05-01 00:00:00", end="2024-07-31 23:00:00", freq='h'),
+                    pd.date_range(start="2024-08-01 00:00:00", end="2024-10-31 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-01-01 00:00:00", end="2021-03-31 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-04-01 00:00:00", end="2021-06-30 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-07-01 00:00:00", end="2021-09-30 23:00:00", freq='h'),
+                #     pd.date_range(start="2021-10-01 00:00:00", end="2021-12-31 23:00:00", freq='h')
+                  ],
+                  "datetime_range.")
+
+flags.DEFINE_list("data_period_list", 
+                  [
+                    # "1~3", "4~6", "7~9", "10~12"
+                    "5~7", "8~10"
+                  ],
+                  "data period for power_flow_data and raw_pg_data")
 flags.DEFINE_list("fuel_type", 
                   [
-                    "太陽能", 
-                    "陸域風電", 
-                    "離岸風電",
+                    "太陽能",
+                    "離岸風電", 
+                    "陸域風電"
                   ], 
                   "names for target fuels.")
-flags.DEFINE_list("capacity_target", 
+flags.DEFINE_list("capacity_target",  
                   [
-                    "7.2", 
-                    "0.74", 
-                    "0.24",
+                    # "0",
+                    # "0",
+                    # "0",
+                    ## 2021 (GW) ##
+                    # "9.72",  
+                    # "0.745", 
+                    # "0.836"
+                    ## 2024 (GW) ##
+                    "13.2",
+                    "2.348",  
+                    "0.915",
+                    ## 2050 GOAL? (GW) ##
                   ], 
                   "target capacity of target fuel")
 flags.DEFINE_list("figure_limits",[[00, 700], [0.0, 0.13], [0.0, 0.20], [0.00, 0.0065]], "fixed y-axis upper and lower bounds for EI figures")
@@ -142,10 +172,10 @@ def emission_intenisty_module(
     data_dir: Path,
     pg_file: str,
     station_file: str,
-    generation: pd.Series,
+    generation: pd.Series, # =pg_estimation
     fuel_type: list,
     flow_data: str,
-    scale: str = 'regional',  # or national
+    scale: str = 'regional',  # regional or national
 ):
     def estimate_emissions(
     ):
@@ -240,28 +270,32 @@ def emission_intenisty_module(
             pg=power_generation,
             flow=pg_flow,
             intensity=CO2e_intensity,
-            emission=CO2e_emissions
+            emission=CO2e_emissions,
+            scale=scale
         )
 
         SOx_EFs = calculate_power_flow(
             pg=power_generation,
             flow=pg_flow,
             intensity=SOx_intensity,
-            emission=SOx_emissions
+            emission=SOx_emissions,
+            scale=scale
         )
 
         NOx_EFs = calculate_power_flow(
             pg=power_generation,
             flow=pg_flow,
             intensity=NOx_intensity,
-            emission=NOx_emissions
+            emission=NOx_emissions,
+            scale=scale
         )
 
         PM_EFs = calculate_power_flow(
             pg=power_generation,
             flow=pg_flow,
             intensity=PM_intensity,
-            emission=PM_emissions
+            emission=PM_emissions,
+            scale=scale
         )
 
         return CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs
@@ -280,10 +314,9 @@ def main(_):
 
     logging.set_verbosity(logging.INFO)
 
-    data_period_list = ["1~3", "4~6", "7~9", "10~12"]
     CO2e_EI_year, SOx_EI_year, NOx_EI_year, PM_EI_year = [], [], [], [] 
 
-    for data_idx, (raw_pg_data, power_flow_data, data_period) in enumerate(zip(FLAGS.raw_pg_data, FLAGS.power_flow_data, data_period_list)):
+    for data_idx, (raw_pg_data, power_flow_data, data_period, datetime_range) in enumerate(zip(FLAGS.raw_pg_data, FLAGS.power_flow_data, FLAGS.data_period_list, FLAGS.datetime_range)):
         pg_estimation_total = pd.DataFrame()
         for fuel_idx, (fuel_type, capacity_target) in enumerate(zip(FLAGS.fuel_type, FLAGS.capacity_target)):     
             pg_estimation, region_capacity_factor, national_capacity_factor, capacity_percentage = estimate_target_power(
@@ -313,7 +346,7 @@ def main(_):
             #logging.info(f'The avg of regional capacity factor:\n{region_capacity_factor.mean()}.')
             for region in capacity_percentage:
                 logging.info(f'{region} capacity percentage: {capacity_percentage[region]}.')
-            region_capacity_factor.to_csv(f'{FLAGS.result_dir}\\region_capacity_factor_{fuel_type}_{data_period}.csv', index=False, encoding='utf-8-sig') 
+            region_capacity_factor.to_csv(rf'{FLAGS.result_dir}/region_capacity_factor_{fuel_type}_{data_period}.csv', index=False, encoding='utf-8-sig') 
             
 
         CO2e_EFs, SOx_EFs, NOx_EFs, PM_EFs = emission_intenisty_module(
@@ -325,28 +358,34 @@ def main(_):
             flow_data=power_flow_data
         )
 
-        CO2e_EFs.to_csv(f'{FLAGS.result_dir}\\CO2e_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
-        SOx_EFs.to_csv(f'{FLAGS.result_dir}\\SOx_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
-        NOx_EFs.to_csv(f'{FLAGS.result_dir}\\NOx_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
-        PM_EFs.to_csv(f'{FLAGS.result_dir}\\PM_EI_{data_period}.csv', index=False, encoding='utf-8-sig')
+        CO2e_EFs_kg = CO2e_EFs / 1000 # gCO2e/kWh -> kgCO2e/kWh
+        CO2e_EFs_kg.index = datetime_range
+        CO2e_EFs_kg.columns = [f"{col} (kgCO2e/kWh)" for col in CO2e_EFs_kg.columns]
+        CO2e_EFs_kg.to_csv(rf'{FLAGS.result_dir}/CO2e_EI_{data_period}_kg.csv', index=True, encoding='utf-8-sig')
+        CO2e_EFs.index = datetime_range
+        CO2e_EFs.to_csv(rf'{FLAGS.result_dir}/CO2e_EI_{data_period}.csv', index=True, encoding='utf-8-sig')
+        SOx_EFs.to_csv(rf'{FLAGS.result_dir}/SOx_EI_{data_period}.csv', index=True, encoding='utf-8-sig')
+        NOx_EFs.to_csv(rf'{FLAGS.result_dir}/NOx_EI_{data_period}.csv', index=True, encoding='utf-8-sig')
+        PM_EFs.to_csv(rf'{FLAGS.result_dir}/PM_EI_{data_period}.csv', index=True, encoding='utf-8-sig')
         
         CO2e_EI_year.append(CO2e_EFs.mean())
         SOx_EI_year.append(SOx_EFs.mean())
         NOx_EI_year.append(NOx_EFs.mean())
         PM_EI_year.append(PM_EFs.mean())
 
-    create_figure_CF(FLAGS.result_dir, "太陽能", "region_capacity_factor")
-    create_figure_CF(FLAGS.result_dir, "陸域風電", "region_capacity_factor")
-    create_figure_CF(FLAGS.result_dir, "離岸風電", "region_capacity_factor")
-    create_figure_EI_total(FLAGS.result_dir, ["CO2e_EI", "SOx_EI", "NOx_EI", "PM_EI",], FLAGS.figure_limits)
+    create_figure_CF(FLAGS.result_dir, FLAGS.data_period_list, "太陽能", "region_capacity_factor")
+    create_figure_CF(FLAGS.result_dir, FLAGS.data_period_list, "陸域風電", "region_capacity_factor")
+    create_figure_CF(FLAGS.result_dir, FLAGS.data_period_list, "離岸風電", "region_capacity_factor")
+    create_figure_EI_total(FLAGS.result_dir, FLAGS.data_period_list, ["CO2e_EI", "SOx_EI", "NOx_EI", "PM_EI",], FLAGS.figure_limits)
 
     logging.info(f'The excluded fuel types: {FLAGS.fuel_type}.')
     for (data, EI_name) in zip([CO2e_EI_year, SOx_EI_year, NOx_EI_year, PM_EI_year], ["CO2e", "SOx", "NOx", "PM"]):
-        for i, data_period in enumerate(data_period_list):
+        for i, data_period in enumerate(FLAGS.data_period_list):
             logging.info(f'{data_period}, {EI_name} emission intensity (g/kWh): \n{data[i]}')
         logging.info(f'Annual average {EI_name} emission intensity (g/kWh): \n{pd.DataFrame(data).mean()}')
         # Calculate national average directly 
-        logging.info(f'Annual national average {EI_name} emission intensity (g/kWh): {pd.DataFrame(data).mean().mean()}')
+        data = pd.DataFrame(data).select_dtypes(include=['number'])
+        logging.info(f'Annual national average {EI_name} emission intensity (g/kWh): {pd.DataFrame(data).mean().mean()}') #
 
 if __name__ == "__main__":
     app.run(main)
