@@ -17,23 +17,25 @@ $ git clone git@github.com:wctseng99/emission-intensity-tw.git && cd emission-in
 $ python main.py
 ```
 
-## Architechture
+## Architecture
+```bash
 emission-intensity-tw/
 ├── app/
-│   ├── config/           # New: Configuration files
+│   ├── config/           # Configuration files
 │   │   ├── __init__.py
 │   │   └── settings.py   # Moved all flag definitions here
-│   ├── core/             # New: Core business logic
+│   ├── core/             # Core business logic
 │   │   ├── __init__.py
 │   │   ├── emissions.py  # Emission-related calculations
 │   │   └── power.py      # Power generation-related calculations
-│   ├── data/            # Data processing-related
-│   ├── module/          # Common modules
-│   └── utils/           # New: Utility functions
+│   ├── data/             # Data processing-related
+│   ├── module/           # Common modules
+│   └── utils/            # Utility functions
 │       ├── __init__.py
 │       └── helpers.py
-├── main.py              # Simplified as the program entry point
+├── main.py               # program entry point
 └── requirements.txt
+```
 
 
 ## Description
