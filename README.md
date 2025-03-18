@@ -23,17 +23,17 @@ emission-intensity-tw/
 ├── app/
 │   ├── config/           # Configuration files
 │   │   ├── __init__.py
-│   │   └── settings.py   # Moved all flag definitions here
-│   ├── core/             # Core business logic
+│   │   └── settings.py   # Flag definitions
+│   ├── core/             # Core logic
 │   │   ├── __init__.py
-│   │   ├── emissions.py  # Emission-related calculations
+│   │   ├── emissions.py  # Emission-related
 │   │   └── power.py      # Power generation-related calculations
-│   ├── data/             # Data processing-related
-│   ├── module/           # Common modules
-│   └── utils/            # Utility functions
+│   ├── data/             # Data processing
+│   ├── module/           # Basic calculations
+│   └── utils/            # Helper functions
 │       ├── __init__.py
 │       └── helpers.py
-├── main.py               # program entry point
+├── main.py               # Program entry point
 └── requirements.txt
 ```
 
