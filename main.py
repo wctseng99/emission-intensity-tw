@@ -17,13 +17,8 @@ def main(argv):
     result_dir = Path(FLAGS.result_dir)
     result_dir.mkdir(parents=True, exist_ok=True)
 
-    # Initialize power generator and emission calculator
+    # Initialize power generator
     power_generator = PowerGenerator(data_dir)
-    emission_calculator = EmissionCalculator(
-        data_dir=data_dir,
-        pg_file=FLAGS.raw_pg_data[0],  # Use first file for initialization
-        station_file=FLAGS.station_file,
-    )
 
     # Process data for each period
     for period_idx, period in enumerate(FLAGS.data_period_list):
@@ -31,7 +26,12 @@ def main(argv):
         pg_file = FLAGS.raw_pg_data[period_idx]
         flow_file = FLAGS.power_flow_data[period_idx]
 
-        # Initialize total power generation for this period
+        emission_calculator = EmissionCalculator(
+            data_dir=data_dir,
+            pg_file=pg_file,
+            station_file=FLAGS.station_file,
+        )
+
         pg_estimation_total = pd.DataFrame()
 
         # Process each fuel type
@@ -78,10 +78,13 @@ def main(argv):
             )
 
         # Calculate emission intensity for total power generation
-        emission_intensities = emission_calculator.calculate_emission_intensity(
-            generation=pg_estimation_total,
-            fuel_type=FLAGS.fuel_type,
-            scale="regional",
+        emission_intensities = (
+            emission_calculator.estimate_emission_intensity_with_flow(
+                generation=pg_estimation_total,
+                fuel_type=FLAGS.fuel_type,
+                flow_file=flow_file,
+                scale="regional",
+            )
         )
 
         # Log emission intensities
