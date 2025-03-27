@@ -29,10 +29,7 @@ emission-intensity-tw/
 │   │   ├── emissions.py  # Emission-related
 │   │   └── power.py      # Power generation-related calculations
 │   ├── data/             # Data processing
-│   ├── module/           # Basic calculations
-│   └── utils/            # Helper functions
-│       ├── __init__.py
-│       └── helpers.py
+│   └── module/           # Basic calculations
 ├── main.py               # Program entry point
 └── requirements.txt
 ```
