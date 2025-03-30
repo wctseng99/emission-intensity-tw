@@ -11,13 +11,6 @@ from collections import defaultdict
 from .constants import UNIT_NAME_TO_LOCATION, EXCLUDED_REGIONS
 
 
-class CalculationMode(str, Enum):
-    """Enum for calculation modes."""
-
-    ORIGINAL = "original"
-    PERCENTAGE = "percentage"
-
-
 class CalculationScale(str, Enum):
     """Enum for calculation scales."""
 
@@ -34,35 +27,25 @@ class PowerFlowData(TypedDict):
 def calculate_power_generation_with_target(
     pg_wo_target: pd.DataFrame,
     target_gen_data: pd.DataFrame,
-    mode: CalculationMode = CalculationMode.ORIGINAL,
 ) -> pd.DataFrame:
     """Calculate total power generation including target generation.
 
     Args:
         pg_wo_target: Power generation data without target
         target_gen_data: Target generation data
-        mode: Calculation mode, either 'original' or 'percentage'
 
     Returns:
         DataFrame containing total power generation
     """
-    if mode not in ["original", "percentage"]:
-        raise ValueError(f"Invalid mode: {mode}. Must be 'original' or 'percentage'")
 
     power_generation = pd.DataFrame()
     for region in target_gen_data:
         if region in EXCLUDED_REGIONS:
             continue
 
-        if mode == CalculationMode.ORIGINAL:
-            power_generation[region] = [
-                a + b for a, b in zip(pg_wo_target[region], target_gen_data[region])
-            ]
-        else:  # percentage mode
-            power_generation[region] = [
-                (a - b) + b
-                for a, b in zip(pg_wo_target[region], target_gen_data[region])
-            ]
+        power_generation[region] = [
+            a + b for a, b in zip(pg_wo_target[region], target_gen_data[region])
+        ]
 
     return power_generation
 
