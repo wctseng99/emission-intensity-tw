@@ -3,16 +3,17 @@
 # ---- Python ----
 **/__pycache__/
 
-# ---- 虛擬環境 ----
+# ---- Virtual Environment ----
 venv/
 
-# ---- 作業系統相關 ----
+# ---- OS-related Files ----
 **/.DS_Store
 $RECYCLE.BIN/
 
-# ---- 編輯器與 IDE 設定檔 ----
+# ---- Editor and IDE Settings ----
 .vscode/
 
-# ---- User資料夾 ----
+# ---- User Folders ----
 docs/
 data/
+results/

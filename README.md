@@ -1,6 +1,6 @@
 # Grid emission intensity
 
-#### This repository contains the code for the [E3 Research Group@NTU](https://www.e3group.caece.net) **Hourly grid emission intensity - Taiwan** implementations. For more details, please read the article publication: 
+#### This repository contains the code for the [E3 Research Group@NTU](https://www.e3group.caece.net) **Hourly grid emission intensity - Taiwan** implementations. For more details, please read the article publication:
 ***Wei-Chun Tseng and I-Yun Lisa Hsieh (2023). [Impacts of electric fleet charging patterns under different solar power penetration levels: Hourly grid variations and operating emissions](https://doi.org/10.1016/j.trd.2023.103848). Transportation Research Part D: Transport and Environment.***
 
 ![cover image](cover.png)
@@ -17,6 +17,24 @@ $ git clone git@github.com:wctseng99/emission-intensity-tw.git && cd emission-in
 $ python main.py
 ```
 
+## Architecture
+```bash
+emission-intensity-tw/
+├── app/
+│   ├── config/           # Configuration files
+│   │   ├── __init__.py
+│   │   └── settings.py   # Flag definitions
+│   ├── core/             # Core logic
+│   │   ├── __init__.py
+│   │   ├── emissions.py  # Emission-related
+│   │   └── power.py      # Power generation-related calculations
+│   ├── data/             # Data processing
+│   └── module/           # Basic calculations
+├── main.py               # Program entry point
+└── requirements.txt
+```
+
+
 ## Description
 - The input data for this program is the Open Government Data: [electricity generation of Taiwan Power Company (TPC)](https://data.gov.tw/dataset/37331), which consists of instantaneous electricity generation data at ten-minute intervals over a three-month period.
 - Most of the input data and parameters are manipulated or substituted in **main.py**
@@ -31,5 +49,5 @@ $ python main.py
 
 
 ## Contact information
-***Contributors:** Wei-Chun (Jim) Tseng, Hsun-Yen Wu*  
-***E-mail:** wctseng99@gmail.com*  
+***Contributors:** Wei-Chun (Jim) Tseng, Hsun-Yen Wu*
+***E-mail:** wctseng99@gmail.com*
