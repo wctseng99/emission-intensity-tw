@@ -50,78 +50,99 @@ def get_ap_emission_factor(
 
 
 def get_ghg_emission_factor(data_dir: str, emission_data: str) -> pd.DataFrame:
+    """
+    Calculate greenhouse gas emission factors
 
-    fuel_emission_factor = {
+    Args:
+        data_dir: Path to the data directory
+        emission_data: Emission data filename
+
+    Returns:
+        DataFrame: DataFrame containing the calculation results
+    """
+
+    EMISSION_FACTORS = {
         "carbon_dioxide": {
-            "Coal": float(95237.5),
-            "Gas": float(56100),
-            "Diesel": float(74100),
-            "Oil": float(77400),
+            "Coal": 95237.5,
+            "Gas": 56100,
+            "Diesel": 74100,
+            "Oil": 77400,
         },
         "methane": {
-            "Coal": float(1),
-            "Gas": float(1),
-            "Diesel": float(3),
-            "Oil": float(3),
+            "Coal": 1.0,
+            "Gas": 1.0,
+            "Diesel": 3.0,
+            "Oil": 3.0,
         },
         "nitrous_oxide": {
-            "Coal": float(1.5),
-            "Gas": float(0.1),
-            "Diesel": float(0.6),
-            "Oil": float(0.6),
+            "Coal": 1.5,
+            "Gas": 0.1,
+            "Diesel": 0.6,
+            "Oil": 0.6,
         },
     }
 
-    global_warming_potential = {
-        "carbon_dioxide": float(1),
-        "methane": float(25),
-        "nitrous_oxide": float(298),
+    GWP = {
+        "carbon_dioxide": 1.0,
+        "methane": 25.0,
+        "nitrous_oxide": 298.0,
     }
 
-    path = Path(data_dir, emission_data)
-    raw_emission = pd.read_csv(path)
+    # Heat value conversion factor (J to PJ)
+    HEAT_CONVERSION_FACTOR = 4.1868 * (10**-9)
 
-    for col in ["Gross Electricity Generation", "Gross Low Heating Value"]:
-        if col in raw_emission.columns:
-            raw_emission[col] = pd.to_numeric(raw_emission[col], errors="coerce")
+    file_path = Path(data_dir, emission_data)
+    df = pd.read_csv(file_path)
 
-    raw_emission["Power Generation Heat"] = (
-        raw_emission["Gross Electricity Generation"]
-        * raw_emission["Gross Low Heating Value"]
-        * 4.1868
-        * (10**-9)
+    numeric_columns = [
+        "Gross Electricity Generation",
+        "Gross Low Heating Value",
+        "Net Electricity Generation",
+    ]
+    for col in numeric_columns:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    df["Power Generation Heat"] = (
+        df["Gross Electricity Generation"]
+        * df["Gross Low Heating Value"]
+        * HEAT_CONVERSION_FACTOR
     )
 
-    emissions_types = ["carbon_dioxide", "methane", "nitrous_oxide"]
-    output_columns = [
-        "Carbon Dioxide Emissions",
-        "Methane Emissions",
-        "Nitrous Oxide Emissions",
+    emissions_data = [
+        ("carbon_dioxide", "Carbon Dioxide Emissions"),
+        ("methane", "Methane Emissions"),
+        ("nitrous_oxide", "Nitrous Oxide Emissions"),
     ]
 
-    def calculate_emissions_for_type(emission_type, output_column):
+    for emission_type, column_name in emissions_data:
+        # Create emission factor mapping
+        factors = pd.Series(EMISSION_FACTORS[emission_type])
 
-        factors = pd.Series(fuel_emission_factor[emission_type])
-
-        raw_emission[output_column] = raw_emission.apply(
+        # Calculate emissions
+        df[column_name] = df.apply(
             lambda row: row["Power Generation Heat"] * factors.get(row["Type"], 0),
             axis=1,
         )
 
-    for emission_type, output_column in zip(emissions_types, output_columns):
-        calculate_emissions_for_type(emission_type, output_column)
-
-    # unit: kg
-    raw_emission["Total GHG Emissions"] = sum(
-        raw_emission[col] * global_warming_potential[emission_type]
-        for col, emission_type in zip(output_columns, emissions_types)
+    # Calculate total greenhouse gas emissions (CO2 equivalent)
+    df["Total GHG Emissions"] = sum(
+        df[col] * GWP[emission_type]
+        for emission_type, col in zip(
+            ["carbon_dioxide", "methane", "nitrous_oxide"],
+            [
+                "Carbon Dioxide Emissions",
+                "Methane Emissions",
+                "Nitrous Oxide Emissions",
+            ],
+        )
     )
 
-    raw_emission["Emission Factor"] = raw_emission[
-        "Total GHG Emissions"
-    ] / pd.to_numeric(raw_emission["Net Electricity Generation"], errors="coerce")
+    # Calculate emission factor (kg/kWh)
+    df["Emission Factor"] = df["Total GHG Emissions"] / df["Net Electricity Generation"]
 
-    # print(raw_emission)
+    # print(df)
+    return df
 
 
 # calculate the air pollutant emissions
