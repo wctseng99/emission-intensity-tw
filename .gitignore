@@ -15,5 +15,6 @@ $RECYCLE.BIN/
 
 # ---- User Folders ----
 docs/
-data/
+/data/
+!app/data/
 results/
