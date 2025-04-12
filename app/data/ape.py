@@ -49,13 +49,13 @@ def get_ap_emission_factor(
     return df
 
 
-def get_ghg_emission_factor(data_dir: str, emission_data: str) -> pd.DataFrame:
+def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame:
     """
     Calculate greenhouse gas emission factors
 
     Args:
         data_dir: Path to the data directory
-        emission_data: Emission data filename
+        generation_info: Emission data filename
 
     Returns:
         DataFrame: DataFrame containing the calculation results
@@ -91,7 +91,7 @@ def get_ghg_emission_factor(data_dir: str, emission_data: str) -> pd.DataFrame:
     # Heat value conversion factor (J to PJ)
     HEAT_CONVERSION_FACTOR = 4.1868 * (10**-9)
 
-    file_path = Path(data_dir, emission_data)
+    file_path = Path(data_dir, generation_info)
     df = pd.read_csv(file_path)
 
     numeric_columns = [
@@ -139,7 +139,33 @@ def get_ghg_emission_factor(data_dir: str, emission_data: str) -> pd.DataFrame:
     )
 
     # Calculate emission factor (kg/kWh)
-    df["Emission Factor"] = df["Total GHG Emissions"] / df["Net Electricity Generation"]
+    df["Basic Emission Factor"] = (
+        df["Total GHG Emissions"] / df["Net Electricity Generation"]
+    )
+
+    plant_emissions = df.groupby("Plant")["Total GHG Emissions"].sum().reset_index()
+    plant_emissions.columns = ["Plant", "Total GHG Emissions"]
+
+    reference_path = Path(data_dir, "emission_reference.csv")
+    reference_df = pd.read_csv(reference_path)
+
+    plant_emissions = plant_emissions.merge(
+        reference_df[["Plant", "Reference Emission (kg)"]], on="Plant", how="left"
+    )
+    plant_emissions["Emission Ratio"] = (
+        plant_emissions["Reference Emission (kg)"]
+        / plant_emissions["Total GHG Emissions"]
+    ).fillna(1)
+
+    # need to check: the correction of Emission Ratio
+    print(plant_emissions)
+
+    ratio_dict = dict(zip(plant_emissions["Plant"], plant_emissions["Emission Ratio"]))
+
+    df["adjusted Emission Factor"] = df.apply(
+        lambda row: row["Basic Emission Factor"] * ratio_dict.get(row["Plant"], 1),
+        axis=1,
+    )
 
     # print(df)
     return df
