@@ -27,7 +27,6 @@ def get_ap_emission_factor(
             "硫氧化物排放量(kg)",
             "氮氧化物排放量(kg)",
             "粒狀污染物排放量(kg)",
-            "溫室氣體排放量係數(kg/kwh)",
         ]
     ]
 
@@ -43,8 +42,15 @@ def get_ap_emission_factor(
     df["PM (g/kWh)"] = df["粒狀污染物排放量(kg)"].astype(float).mul(1000) / df[
         "淨發電量(度)"
     ].astype(float)
-    df["CO2e (g/kWh)"] = df["溫室氣體排放量係數(kg/kwh)"].astype(float).mul(1000)
+
+    adjusted_emission_factors = get_ghg_emission_factor(data_dir, "generation_info.csv")
+
     df.set_index("電廠名稱", inplace=True)
+    df = df.join(adjusted_emission_factors, how="left")
+
+    df["CO2e (g/kWh)"] = df["adjusted Emission Factor"].astype(float).mul(1000)
+
+    print(df)
 
     return df
 
@@ -58,7 +64,7 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         generation_info: Emission data filename
 
     Returns:
-        DataFrame: DataFrame containing the calculation results
+        DataFrame: DataFrame containing the emission factors
     """
 
     EMISSION_FACTORS = {
@@ -157,9 +163,6 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         / plant_emissions["Total GHG Emissions"]
     ).fillna(1)
 
-    # need to check: the correction of Emission Ratio
-    print(plant_emissions)
-
     ratio_dict = dict(zip(plant_emissions["Plant"], plant_emissions["Emission Ratio"]))
 
     df["adjusted Emission Factor"] = df.apply(
@@ -167,8 +170,10 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         axis=1,
     )
 
-    # print(df)
-    return df
+    result_df = df[["Generator", "adjusted Emission Factor"]]
+    result_df.set_index("Generator", inplace=True)
+
+    return result_df
 
 
 # calculate the air pollutant emissions

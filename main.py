@@ -92,23 +92,35 @@ def main(argv):
         for emission_type, intensity in emission_intensities.items():
             logging.info(f"\n{emission_type}:")
             logging.info(f"{intensity.mean()}")
+
+            intensity.to_csv(
+                result_dir / f"{emission_type}_EI_{period}.csv", encoding="utf-8-sig"
+            )
         logging.info("\n---")
 
-        # Create figures
-        for fuel_type in FLAGS.fuel_type:
-            create_figure_CF(
-                result_dir=result_dir,
-                data_period_list=FLAGS.data_period_list,
-                fuel_type=fuel_type,
-                target="region_capacity_factor",
-            )
-
-        create_figure_EI_total(
+    # Create figures
+    for fuel_type in FLAGS.fuel_type:
+        create_figure_CF(
             result_dir=result_dir,
             data_period_list=FLAGS.data_period_list,
-            targets=["CO2e_EI", "SOx_EI", "NOx_EI", "PM_EI"],
-            limits=FLAGS.figure_limits,
+            fuel_type=fuel_type,
+            target="region_capacity_factor",
         )
+
+    create_figure_EI_total(
+        result_dir=result_dir,
+        data_period_list=FLAGS.data_period_list,
+        targets=["CO2e_EI", "SOx_EI", "NOx_EI", "PM_EI"],
+        limits=FLAGS.figure_limits,
+    )
+
+
+# def test_main(argv):
+#     from app.data.ape import get_ghg_emission_factor
+
+#     data_dir = Path(FLAGS.data_dir)
+#     generation_info = Path(data_dir, "generation_info.csv")
+#     ap_emission_factor = get_ghg_emission_factor(data_dir, generation_info)
 
 
 if __name__ == "__main__":
