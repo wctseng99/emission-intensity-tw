@@ -156,7 +156,7 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
     # --------optional: adjusted emission factor----------------------
 
     # Just demonstrate how to calculate the adjusted emission factor.
-    # To align with the paper's methods, we don't it.
+    # To align with the paper's methods, we don't use it.
     plant_emissions = df.groupby("Plant")["Total GHG Emissions"].sum().reset_index()
     plant_emissions.columns = ["Plant", "Total GHG Emissions"]
 
