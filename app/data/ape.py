@@ -27,6 +27,7 @@ def get_ap_emission_factor(
             "硫氧化物排放量(kg)",
             "氮氧化物排放量(kg)",
             "粒狀污染物排放量(kg)",
+            # "溫室氣體排放量係數(kg/kwh)",
         ]
     ]
 
@@ -42,22 +43,24 @@ def get_ap_emission_factor(
     df["PM (g/kWh)"] = df["粒狀污染物排放量(kg)"].astype(float).mul(1000) / df[
         "淨發電量(度)"
     ].astype(float)
+    # df["CO2e (g/kWh)"] = df["溫室氣體排放量係數(kg/kwh)"].astype(float).mul(1000)
 
-    adjusted_emission_factors = get_ghg_emission_factor(data_dir, "generation_info.csv")
+    basic_emission_factors = get_ghg_emission_factor(data_dir, "generation_info.csv")
 
     df.set_index("電廠名稱", inplace=True)
-    df = df.join(adjusted_emission_factors, how="left")
+    df = df.join(basic_emission_factors, how="left")
 
-    df["CO2e (g/kWh)"] = df["adjusted Emission Factor"].astype(float).mul(1000)
+    df["CO2e (g/kWh)"] = df["Basic Emission Factor"].astype(float).mul(1000)
 
-    print(df)
+    output_path = "./emission_factors_test.csv"
+    df.to_csv(output_path, encoding="utf-8-sig")
 
     return df
 
 
 def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame:
     """
-    Calculate greenhouse gas emission factors
+    Calculate greenhouse gas emission factors called by "get_ap_emission_factor"
 
     Args:
         data_dir: Path to the data directory
@@ -94,17 +97,24 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         "nitrous_oxide": 298.0,
     }
 
-    # Heat value conversion factor (J to PJ)
-    HEAT_CONVERSION_FACTOR = 4.1868 * (10**-9)
-
-    file_path = Path(data_dir, generation_info)
-    df = pd.read_csv(file_path)
+    emissions_data = [
+        ("carbon_dioxide", "Carbon Dioxide Emissions"),
+        ("methane", "Methane Emissions"),
+        ("nitrous_oxide", "Nitrous Oxide Emissions"),
+    ]
 
     numeric_columns = [
         "Gross Electricity Generation",
         "Gross Low Heating Value",
         "Net Electricity Generation",
     ]
+
+    # Heat value conversion factor (J to PJ)
+    HEAT_CONVERSION_FACTOR = 4.1868 * (10**-9)
+
+    file_path = Path(data_dir, generation_info)
+    df = pd.read_csv(file_path)
+
     for col in numeric_columns:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -114,12 +124,6 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         * df["Gross Low Heating Value"]
         * HEAT_CONVERSION_FACTOR
     )
-
-    emissions_data = [
-        ("carbon_dioxide", "Carbon Dioxide Emissions"),
-        ("methane", "Methane Emissions"),
-        ("nitrous_oxide", "Nitrous Oxide Emissions"),
-    ]
 
     for emission_type, column_name in emissions_data:
         # Create emission factor mapping
@@ -149,6 +153,10 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         df["Total GHG Emissions"] / df["Net Electricity Generation"]
     )
 
+    # --------optional: adjusted emission factor----------------------
+
+    # Just demonstrate how to calculate the adjusted emission factor.
+    # To align with the paper's methods, we don't it.
     plant_emissions = df.groupby("Plant")["Total GHG Emissions"].sum().reset_index()
     plant_emissions.columns = ["Plant", "Total GHG Emissions"]
 
@@ -170,7 +178,9 @@ def get_ghg_emission_factor(data_dir: str, generation_info: str) -> pd.DataFrame
         axis=1,
     )
 
-    result_df = df[["Generator", "adjusted Emission Factor"]]
+    # ----------End: adjusted emission factor--------------------------
+
+    result_df = df[["Generator", "Basic Emission Factor"]]
     result_df.set_index("Generator", inplace=True)
 
     return result_df

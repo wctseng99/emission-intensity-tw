@@ -115,13 +115,5 @@ def main(argv):
     )
 
 
-# def test_main(argv):
-#     from app.data.ape import get_ghg_emission_factor
-
-#     data_dir = Path(FLAGS.data_dir)
-#     generation_info = Path(data_dir, "generation_info.csv")
-#     ap_emission_factor = get_ghg_emission_factor(data_dir, generation_info)
-
-
 if __name__ == "__main__":
     app.run(main)
