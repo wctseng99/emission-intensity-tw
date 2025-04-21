@@ -52,9 +52,6 @@ def get_ap_emission_factor(
 
     df["CO2e (g/kWh)"] = df["Basic Emission Factor"].astype(float).mul(1000)
 
-    output_path = "./emission_factors_test.csv"
-    df.to_csv(output_path, encoding="utf-8-sig")
-
     return df
 
 
