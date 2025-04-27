@@ -87,14 +87,21 @@ def main(argv):
             )
         )
 
-        # Log emission intensities
+        # Log emission intensities and save to CSV files
         logging.info(f"\nEmission intensities for period {period}:")
         for emission_type, intensity in emission_intensities.items():
             logging.info(f"\n{emission_type}:")
             logging.info(f"{intensity.mean()}")
-
+            # Add datetime index
+            start_time, end_time = FLAGS.datetime_range[period_idx].split("|")
+            datetime_index = pd.date_range(start=start_time, end=end_time, freq="h")
+            intensity.index = datetime_index
+            # Save each emission type to a separate CSV file
+            print(f"out put to csv file {emission_type}")
             intensity.to_csv(
-                result_dir / f"{emission_type}_EI_{period}.csv", encoding="utf-8-sig"
+                result_dir / f"{emission_type}_EI_{period}.csv",
+                encoding="utf-8-sig",
+                index=True,
             )
         logging.info("\n---")
 
