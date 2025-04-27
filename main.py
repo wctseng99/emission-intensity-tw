@@ -97,7 +97,6 @@ def main(argv):
             datetime_index = pd.date_range(start=start_time, end=end_time, freq="h")
             intensity.index = datetime_index
             # Save each emission type to a separate CSV file
-            print(f"out put to csv file {emission_type}")
             intensity.to_csv(
                 result_dir / f"{emission_type}_EI_{period}.csv",
                 encoding="utf-8-sig",

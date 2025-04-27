@@ -27,7 +27,6 @@ def get_ap_emission_factor(
             "硫氧化物排放量(kg)",
             "氮氧化物排放量(kg)",
             "粒狀污染物排放量(kg)",
-            # "溫室氣體排放量係數(kg/kwh)",
         ]
     ]
 
@@ -43,7 +42,6 @@ def get_ap_emission_factor(
     df["PM (g/kWh)"] = df["粒狀污染物排放量(kg)"].astype(float).mul(1000) / df[
         "淨發電量(度)"
     ].astype(float)
-    # df["CO2e (g/kWh)"] = df["溫室氣體排放量係數(kg/kwh)"].astype(float).mul(1000)
 
     basic_emission_factors = get_ghg_emission_factor(data_dir, "generation_info.csv")
 

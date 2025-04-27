@@ -45,7 +45,6 @@ class EmissionCalculator:
                 "硫氧化物排放量(kg)",
                 "氮氧化物排放量(kg)",
                 "粒狀污染物排放量(kg)",
-                "溫室氣體排放量係數(kg/kwh)",
             ],
         }
 
